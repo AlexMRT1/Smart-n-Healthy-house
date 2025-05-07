@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="es-mx">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Smart'n Healthy House</title>
+    <style>
+        .preload * {
+            -webkit-transition: none !important;
+            -moz-transition: none !important;
+            -ms-transition: none !important;
+            -o-transition: none !important;
+            transition: none !important;
+        }
+    </style>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/Observer.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/4.3.7/mqtt.min.js"></script>
+
+        <link rel="icon" 
+          type="image/png" 
+          href="/www/assets/img/logo1Black.svg"
+          media="(prefers-color-scheme: light)" />
+    
+    <link rel="icon" 
+          type="image/png" 
+          href="/www/assets/img/logo1White.svg" 
+          media="(prefers-color-scheme: dark)" />
+</head>
+<body class="preload">
+    <div class="spinner-container">
+        <div class="spinner"></div>
+    </div>
+    <div class="site-container">
+        <div><svg xmlns="http://www.w3.org/2000/svg" width="60px" height="60px" viewBox="0 0 377 331" version="1.1">
+            <path d="M 162.500 42.798 C 159.750 44.316, 154.575 47.833, 151 50.613 C 81.060 104.999, 44.434 134.108, 35.750 142.209 C 30.337 147.259, 29.803 149.894, 33.455 153.545 C 38.879 158.970, 42.571 156.993, 74.500 131.564 C 85.500 122.803, 98.550 112.420, 103.500 108.490 C 108.450 104.560, 123.616 92.513, 137.203 81.718 C 167.067 57.990, 169.036 56.640, 173.532 56.809 C 178.376 56.991, 181.005 58.603, 193.500 69.054 C 205.819 79.357, 216.640 88.107, 222.252 92.301 L 226 95.102 226 85.265 L 226 75.428 218.750 69.479 C 198.188 52.606, 185.170 42.565, 182.282 41.352 C 176.741 39.024, 168.203 39.648, 162.500 42.798 M 241.667 41.667 C 241.300 42.033, 241.005 56.996, 241.011 74.917 L 241.022 107.500 268.294 129.817 C 301.879 157.299, 303.153 158.191, 306.951 156.867 C 310.092 155.772, 312.663 153.322, 313.106 151 C 313.743 147.661, 311.477 144.857, 301.720 136.910 C 296.099 132.332, 283.288 121.678, 273.250 113.234 L 255 97.880 255 69.440 L 255 41 248.667 41 C 245.183 41, 242.033 41.300, 241.667 41.667 M 167.383 133.982 C 166.218 134.453, 162.121 137.132, 158.278 139.935 C 154.435 142.739, 146.163 148.113, 139.895 151.876 C 133.542 155.692, 127.954 159.776, 127.265 161.109 C 125.910 163.731, 125.576 174.785, 126.794 176.701 C 127.354 177.582, 130.078 176.891, 137.028 174.105 C 152.068 168.078, 159.527 166.615, 175 166.657 C 184.556 166.684, 190.399 167.202, 195 168.431 C 202.803 170.516, 215.494 175.621, 219.113 178.130 C 220.550 179.126, 222.012 179.654, 222.363 179.304 C 222.713 178.953, 223 175.146, 223 170.844 L 223 163.020 217.750 159.638 C 214.863 157.777, 205.338 151.619, 196.585 145.953 C 177.180 133.392, 173.042 131.696, 167.383 133.982 M 57.405 163.104 C 55.592 165.107, 55.486 167.693, 55.207 216.671 L 54.915 268.134 57.316 273.317 C 60.087 279.295, 63.018 282.660, 68.772 286.468 C 74.468 290.237, 88.428 291.361, 120.910 290.667 C 143.689 290.180, 146.505 289.936, 148.097 288.312 C 151.135 285.214, 151.353 281.820, 148.763 277.975 L 146.421 274.500 112.524 274.236 C 75.192 273.946, 76.838 274.228, 73.148 267.502 C 71.700 264.865, 71.439 258.462, 71 214.854 C 70.526 167.824, 70.400 165.097, 68.595 163.104 C 66.005 160.244, 59.995 160.244, 57.405 163.104 M 162.430 175.982 C 151.005 177.595, 136.065 182.969, 128.979 188.015 L 126 190.136 126 214.433 C 126 237.947, 126.071 238.820, 128.198 241.525 L 130.397 244.320 174.275 243.654 C 200.435 243.257, 218.913 242.582, 220.034 241.982 C 222.777 240.514, 223.116 236.890, 222.792 212.500 L 222.500 190.500 211.495 184.958 C 195.640 176.974, 178.116 173.768, 162.430 175.982 M 155.846 190.973 C 142.756 194.843, 131 201.257, 131 204.528 C 131 205.312, 132.118 206.686, 133.484 207.581 C 135.859 209.138, 136.261 209.058, 142.734 205.739 C 154.936 199.483, 159.114 198.500, 173.500 198.500 C 187.974 198.500, 192.783 199.634, 203.662 205.613 C 207.052 207.476, 210.529 209, 211.389 209 C 213.386 209, 216.220 204.736, 215.489 202.832 C 214.595 200.501, 205.150 195.329, 196.500 192.432 C 185.415 188.721, 165.839 188.018, 155.846 190.973 M 163.248 211.814 C 157.221 213.971, 154 216.516, 154 219.120 C 154 222.493, 157.401 223.207, 162.983 221.007 C 169.612 218.394, 178.377 218.391, 185.239 220.999 C 191.556 223.400, 193.351 223.487, 195.025 221.470 C 200.753 214.569, 176.305 207.139, 163.248 211.814" stroke="none" fill="#FFFFF" fill-rule="evenodd"/>
+        </svg>
+    </div>
+    <span class="site-title">
+        Smart'n Healthy House
+        <span class="beta-badge">Beta</span>
+    </span>
+        <div class="hamburger-menu">
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+        </div>
+    </div>
+    <div class="room-temp-container">
+        <div class="room-name">Sala Principal</div>
+        <div class="temperature">Cargando...</div>
+        <section class="loader">
+            <div>
+              <div>
+                <span class="one h6"></span>
+                <span class="two h3"></span>
+              </div>
+            </div>
+      
+            <div>
+              <div>
+                <span class="one h1"></span>
+              </div>
+            </div>
+      
+            <div>
+              <div>
+                <span class="two h2"></span>
+              </div>
+            </div>
+            <div>
+              <div>
+                <span class="one h4"></span>
+              </div>
+            </div>
+          </section>
+        
+    </div>
+
+    <div class="sensor-grid">
+        <div class="sensor-item glass-effect">
+            <div class="sensor-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M15 13V5c0-1.66-1.34-3-3-3S9 3.34 9 5v8c-1.21.91-2 2.37-2 4 0 2.76 2.24 5 5 5s5-2.24 5-5c0-1.63-.79-3.09-2-4zm-4-8c0-.55.45-1 1-1s1 .45 1 1h-2z" fill="currentColor"/>
+                </svg>
+            </div>
+            <span class="sensor-label">Sensación corporal</span>
+            <span class="sensor-value">31°</span>
+        </div>
+        
+        <div class="sensor-item glass-effect">
+            <div class="sensor-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d="M269.5 69.9c11.1-7.9 25.9-7.9 37 0C329 85.4 356.5 96 384 96c26.9 0 55.4-10.8 77.4-26.1c0 0 0 0 0 0c11.9-8.5 28.1-7.8 39.2 1.7c14.4 11.9 32.5 21 50.6 25.2c17.2 4 27.9 21.2 23.9 38.4s-21.2 27.9-38.4 23.9c-24.5-5.7-44.9-16.5-58.2-25C449.5 149.7 417 160 384 160c-31.9 0-60.6-9.9-80.4-18.9c-5.8-2.7-11.1-5.3-15.6-7.7c-4.5 2.4-9.7 5.1-15.6 7.7c-19.8 9-48.5 18.9-80.4 18.9c-33 0-65.5-10.3-94.5-25.8c-13.4 8.4-33.7 19.3-58.2 25c-17.2 4-34.4-6.7-38.4-23.9s6.7-34.4 23.9-38.4C42.8 92.6 61 83.5 75.3 71.6c11.1-9.5 27.3-10.1 39.2-1.7c0 0 0 0 0 0C136.7 85.2 165.1 96 192 96c27.5 0 55-10.6 77.5-26.1zm37 288C329 373.4 356.5 384 384 384c26.9 0 55.4-10.8 77.4-26.1c0 0 0 0 0 0c11.9-8.5 28.1-7.8 39.2 1.7c14.4 11.9 32.5 21 50.6 25.2c17.2 4 27.9 21.2 23.9 38.4s-21.2 27.9-38.4 23.9c-24.5-5.7-44.9-16.5-58.2-25C449.5 437.7 417 448 384 448c-31.9 0-60.6-9.9-80.4-18.9c-5.8-2.7-11.1-5.3-15.6-7.7c-4.5 2.4-9.7 5.1-15.6 7.7c-19.8 9-48.5 18.9-80.4 18.9c-33 0-65.5-10.3-94.5-25.8c-13.4 8.4-33.7 19.3-58.2 25c-17.2 4-34.4-6.7-38.4-23.9s6.7-34.4 23.9-38.4c18.1-4.2 36.2-13.3 50.6-25.2c11.1-9.4 27.3-10.1 39.2-1.7c0 0 0 0 0 0C136.7 373.2 165.1 384 192 384c27.5 0 55-10.6 77.5-26.1c11.1-7.9 25.9-7.9 37 0zm0-144C329 229.4 356.5 240 384 240c26.9 0 55.4-10.8 77.4-26.1c0 0 0 0 0 0c11.9-8.5 28.1-7.8 39.2 1.7c14.4 11.9 32.5 21 50.6 25.2c17.2 4 27.9 21.2 23.9 38.4s-21.2 27.9-38.4 23.9c-24.5-5.7-44.9-16.5-58.2-25C449.5 293.7 417 304 384 304c-31.9 0-60.6-9.9-80.4-18.9c-5.8-2.7-11.1-5.3-15.6-7.7c-4.5 2.4-9.7 5.1-15.6 7.7c-19.8 9-48.5 18.9-80.4 18.9c-33 0-65.5-10.3-94.5-25.8c-13.4 8.4-33.7 19.3-58.2 25c-17.2 4-34.4-6.7-38.4-23.9s6.7-34.4 23.9-38.4c18.1-4.2 36.2-13.3 50.6-25.2c11.1-9.5 27.3-10.1 39.2-1.7c0 0 0 0 0 0C136.7 229.2 165.1 240 192 240c27.5 0 55-10.6 77.5-26.1c11.1-7.9 25.9-7.9 37 0z"/></svg>
+            </div>
+            <span class="sensor-label">Indundacion</span>
+            <span class="sensor-value">No detectada</span>
+        </div>
+
+        <div class="sensor-item glass-effect">
+            <div class="sensor-icon">
+               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d="M32 144c0 79.5 64.5 144 144 144l123.3 0c22.6 19.9 52.2 32 84.7 32s62.1-12.1 84.7-32l27.3 0c61.9 0 112-50.1 112-112s-50.1-112-112-112c-10.7 0-21 1.5-30.8 4.3C443.8 27.7 401.1 0 352 0c-32.6 0-62.4 12.2-85.1 32.3C242.1 12.1 210.5 0 176 0C96.5 0 32 64.5 32 144zM616 368l-336 0c-13.3 0-24 10.7-24 24s10.7 24 24 24l336 0c13.3 0 24-10.7 24-24s-10.7-24-24-24zm-64 96l-112 0c-13.3 0-24 10.7-24 24s10.7 24 24 24l112 0c13.3 0 24-10.7 24-24s-10.7-24-24-24zm-192 0L24 464c-13.3 0-24 10.7-24 24s10.7 24 24 24l336 0c13.3 0 24-10.7 24-24s-10.7-24-24-24zM224 392c0-13.3-10.7-24-24-24L96 368c-13.3 0-24 10.7-24 24s10.7 24 24 24l104 0c13.3 0 24-10.7 24-24z"/></svg>
+            </div>
+            <span class="sensor-label">Fugas de Gas</span>
+            <span class="sensor-value">No detectada</span>
+        </div>
+
+        <div class="sensor-item glass-effect">
+            <div class="sensor-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M12 2c-5.33 4.55-8 8.48-8 11.8 0 4.98 3.8 8.2 8 8.2s8-3.22 8-8.2c0-3.32-2.67-7.25-8-11.8zm0 18c-3.35 0-6-2.57-6-6.2 0-2.34 1.95-5.44 6-9.14 4.05 3.7 6 6.79 6 9.14 0 3.63-2.65 6.2-6 6.2z" fill="currentColor"/>
+                </svg>
+            </div>
+            <span class="sensor-label">Humedad</span>
+            <span class="sensor-value">22%</span>
+        </div>
+
+        <div class="sensor-item glass-effect">
+            <div class="sensor-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d="M159.3 5.4c7.8-7.3 19.9-7.2 27.7 .1c27.6 25.9 53.5 53.8 77.7 84c11-14.4 23.5-30.1 37-42.9c7.9-7.4 20.1-7.4 28 .1c34.6 33 63.9 76.6 84.5 118c20.3 40.8 33.8 82.5 33.8 111.9C448 404.2 348.2 512 224 512C98.4 512 0 404.1 0 276.5c0-38.4 17.8-85.3 45.4-131.7C73.3 97.7 112.7 48.6 159.3 5.4zM225.7 416c25.3 0 47.7-7 68.8-21c42.1-29.4 53.4-88.2 28.1-134.4c-4.5-9-16-9.6-22.5-2l-25.2 29.3c-6.6 7.6-18.5 7.4-24.7-.5c-16.5-21-46-58.5-62.8-79.8c-6.3-8-18.3-8.1-24.7-.1c-33.8 42.5-50.8 69.3-50.8 99.4C112 375.4 162.6 416 225.7 416z"/></svg>
+            </div>
+            <span class="sensor-label">Fuego</span>
+            <span class="sensor-value">No detectado</span>
+        </div>
+
+        <div class="sensor-item glass-effect">
+            <div class="sensor-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z" fill="currentColor"/>
+                </svg>
+            </div>
+            <span class="sensor-label">Batería</span>
+            <span class="sensor-value">95%</span>
+        </div>
+
+        <div class="sensor-item glass-effect">
+            <div class="sensor-icon camera-status">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" fill="currentColor"/>
+                </svg>
+                <span class="status-dot"></span>
+            </div>
+            <span class="sensor-label">Cámara</span>
+            <span class="sensor-value">Activa</span>
+        </div>
+           <div class="sensor-item glass-effect">
+            <div class="sensor-icon Security-status">
+               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d="M256 0c4.6 0 9.2 1 13.4 2.9L457.7 82.8c22 9.3 38.4 31 38.3 57.2c-.5 99.2-41.3 280.7-213.6 363.2c-16.7 8-36.1 8-52.8 0C57.3 420.7 16.5 239.2 16 140c-.1-26.2 16.3-47.9 38.3-57.2L242.7 2.9C246.8 1 251.4 0 256 0zm0 66.8l0 378.1C394 378 431.1 230.1 432 141.4L256 66.8s0 0 0 0z"/></svg>
+                <span class="status-dot"></span>
+            </div>
+            <span class="sensor-label">Seguridad</span>
+            <span class="sensor-value">Cargano...</span>
+        </div>
+    </div>
+
+    
+
+    <div class="toast-container">
+        <div class="toast welcome-toast glass-effect">
+            <span class="toast-text">¡Hola <span id="User-name">Usuario</span>!</span>
+        </div>
+    </div>
+    <div class="toast error-toast glass-effect">
+        <div class="error-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+                <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm-1-5h2v2h-2v-2zm0-8h2v6h-2V7z" fill="currentColor"/>
+            </svg>
+        </div>
+        <span class="toast-text">Ya estás viendo este dispositivo</span>
+    </div>
+
+    <div class="widgets-container">
+        <!-- Estado General Widget -->
+        <div class="widget glass-effect status-widget">
+            <div class="widget-content">
+                <div class="widget-header">
+                    <span class="widget-label">Estado General</span>
+                    <span class="widget-status">Normal</span>
+                </div>
+                <div class="widget-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="#4CAF50"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alertas Widget -->
+        <div class="widget glass-effect alert-widget">
+            <div class="widget-content">
+                <div class="widget-header">
+                    <span class="widget-label">Alertas Activas</span>
+                    <span class="widget-status">0 alertas</span>
+                </div>
+                <div class="widget-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+                        <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" fill="#FF9800"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Salud Widget -->
+        <div class="widget glass-effect health-widget">
+            <div class="widget-content">
+                <div class="widget-header">
+                    <span class="widget-label">Salud Ambiental</span>
+                    <span class="widget-status">98%</span>
+                </div>
+                <div class="widget-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#FF4444"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <nav class="fullscreen-menu">
+        <div class="menu-content main-menu">
+            <ul>
+                <li><a href="#">Inicio</a></li>
+                <li><a href="#" class="rooms-link">Dispositivos</a></li>
+                <li><a href="#">Configuración</a></li>
+                <li><a href="user/Data/cam/index.html">Cámara en directo</a></li>
+                <li><a href="../www/chat/index.html">Chat Inteligente <span class="beta-badge">Experimental</span></a></li>
+                <li><a href="#">Soporte</a></li>
+            </ul>
+        </div>
+        <div class="menu-content rooms-menu">
+            <div class="floor-plan">
+                <div class="device" data-device="1">Dispositivo 1</div>
+            </div>
+        </div>
+    </nav>
+
+    <script src="script.js"></script>
+    <script>
+document.addEventListener('DOMContentLoaded', () => {
+    const securityValue = document.querySelector('.Security-status').nextElementSibling.nextElementSibling;
+    const securityDot = document.querySelector('.Security-status .status-dot');
+    const alertWidget = document.querySelector('.alert-widget .widget-status');
+
+    if (securityValue && securityDot && alertWidget) {
+        const faceSetupCompleted = localStorage.getItem('faceSetupCompleted');
+        
+        if (faceSetupCompleted === 'true') {
+            securityValue.textContent = 'Activa';
+            securityDot.style.backgroundColor = '#4CAF50';
+            securityDot.style.boxShadow = '0 0 10px #4CAF50';
+            alertWidget.textContent = '0 alertas';
+        } else {
+            securityValue.textContent = 'Inactiva';
+            securityDot.style.backgroundColor = '#FF5252';
+            securityDot.style.boxShadow = '0 0 10px #FF5252';
+            alertWidget.textContent = '1 alerta';
+        }
+    }
+});
+function updateDeviceStates(newStates) {
+    try {
+        const currentStates = JSON.parse(localStorage.getItem('deviceStates') || '{}');
+        const updatedStates = { ...currentStates, ...newStates };
+        localStorage.setItem('deviceStates', JSON.stringify(updatedStates));
+    } catch (error) {
+        console.error('Error updating device states:', error);
+    }
+}
+
+updateDeviceStates({
+    temperature: "32°",
+    humidity: "24%",
+
+});
+
+function getAllSensorValues() {
+    const sensors = document.querySelectorAll('.sensor-item');
+    const states = {};
+
+    sensors.forEach(sensor => {
+        const label = sensor.querySelector('.sensor-label').textContent.toLowerCase();
+        const value = sensor.querySelector('.sensor-value').textContent;
+        
+        switch(label) {
+            case 'sensación corporal':
+                states.temperature = value;
+                break;
+            case 'indundacion':
+                states.flood = value;
+                break;
+            case 'fugas de gas':
+                states.gas = value;
+                break;
+            case 'humedad':
+                states.humidity = value;
+                break;
+            case 'fuego':
+                states.fire = value;
+                break;
+            case 'batería':
+                states.battery = value;
+                break;
+            case 'cámara':
+                states.camera = value;
+                break;
+            case 'seguridad':
+                states.security = value;
+                break;
+        }
+    });
+
+    states.generalStatus = document.querySelector('.status-widget .widget-status').textContent;
+    states.alerts = document.querySelector('.alert-widget .widget-status').textContent;
+    states.environmentalHealth = document.querySelector('.health-widget .widget-status').textContent;
+
+    return states;
+}
+
+async function updateAIContext() {
+    try {
+        const states = getAllSensorValues();
+        
+        localStorage.setItem('deviceStates', JSON.stringify(states));
+        
+        const response = await fetch('http://localhost:5000/api/updateStates', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(states)
+        });
+
+        if (!response.ok) {
+            throw new Error('Error updating AI context');
+        }
+
+        console.log('AI context updated with current states:', states);
+    } catch (error) {
+        console.error('Error updating AI context:', error);
+    }
+}
+
+setInterval(updateAIContext, 5000);
+
+document.addEventListener('DOMContentLoaded', () => {
+    updateAIContext();
+});
+</script>
+</body>
+</html>

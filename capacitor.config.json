@@ -1,0 +1,6 @@
+{
+  "appId": "com.smartnhealthy.home",
+  "appName": "Smart'n Healthy Home",
+  "webDir": "WWW",
+  "bundledWebRuntime": false
+}
