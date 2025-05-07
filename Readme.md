@@ -36,7 +36,7 @@ El acceso o posesión de este documento no otorga, explícita ni implícitamente
 - API publica y Comercial
 ## Instalacion de librerias necesarias
 
-Install my-project with npm
+Instalacion de librerías 
 
 ```bash
   npm install cors
@@ -48,7 +48,7 @@ para iniciar el servidor local de IA
 ```bash
     node API/Gemini/main.js
 ```
-## Tech Stack
+## Tecnologias
 
 **Cliente:** CSS3, Javascript(ES6+),SVG
 
