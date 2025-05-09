@@ -150,9 +150,9 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.classList.remove('preload');
     }, 100);
 
-    // Configuración del cliente MQTT con Mosquitto
-    const client = mqtt.connect('ws://test.mosquitto.org:8080', {
-        clientId: 'smartnhealthy_' + Math.random().toString(16).substr(2, 8),
+    // Configuración del cliente MQTT con AWS IoT
+    const client = mqtt.connect('wss://acw04p2w17u4m-ats.iot.us-east-1.amazonaws.com', {
+        clientId: 'ESP32_CAM_PIRBrowser' + Math.random().toString(16).substr(2, 8),
         clean: true,
         connectTimeout: 4000,
         reconnectPeriod: 1000,

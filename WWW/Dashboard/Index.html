@@ -2,7 +2,7 @@
 <html lang="es-mx">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart'n Healthy House</title>
     <style>
         .preload * {
@@ -17,8 +17,10 @@
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/Observer.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1001.0.min.js"></script>
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/4.3.7/mqtt.min.js"></script>
+    <script src="scripts/config.js"></script>
+    <script src="scripts/Data.js"></script>
 
         <link rel="icon" 
           type="image/png" 
@@ -51,7 +53,7 @@
     </div>
     <div class="room-temp-container">
         <div class="room-name">Sala Principal</div>
-        <div class="temperature">Cargando...</div>
+        <div class="temperature" data-sensor="temperature">--°</div>
         <section class="loader">
             <div>
               <div>
@@ -114,7 +116,7 @@
                 </svg>
             </div>
             <span class="sensor-label">Humedad</span>
-            <span class="sensor-value">22%</span>
+            <span class="sensor-value" data-sensor="humidity">--</span>
         </div>
 
         <div class="sensor-item glass-effect">
@@ -236,7 +238,7 @@
         </div>
     </nav>
 
-    <script src="script.js"></script>
+    <script src="scripts/main.js"></script>
     <script>
 document.addEventListener('DOMContentLoaded', () => {
     const securityValue = document.querySelector('.Security-status').nextElementSibling.nextElementSibling;
@@ -348,5 +350,6 @@ document.addEventListener('DOMContentLoaded', () => {
     updateAIContext();
 });
 </script>
+<script type="module" src="scripts/Data.js"></script>
 </body>
 </html>
