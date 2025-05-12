@@ -24,12 +24,12 @@
 
         <link rel="icon" 
           type="image/png" 
-          href="/www/assets/img/logo1Black.svg"
+          href="../Assets/logo1Black.svg"
           media="(prefers-color-scheme: light)" />
     
     <link rel="icon" 
           type="image/png" 
-          href="/www/assets/img/logo1White.svg" 
+          href="../Assets/logo1White.svg" 
           media="(prefers-color-scheme: dark)" />
 </head>
 <body class="preload">
@@ -51,35 +51,19 @@
             <div class="bar"></div>
         </div>
     </div>
+    <div class="connection-status">
+        <div class="status-dot"></div>
+        <span class="status-text">Conectando...</span>
+        <div class="last-update">
+            <svg class="update-icon" width="16" height="16" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/>
+            </svg>
+            <span class="last-update-text">Actualizando...</span>
+        </div>
+    </div>
     <div class="room-temp-container">
-        <div class="room-name">Sala Principal</div>
+        <div class="room-name">Smart'n healthy House Test model</div>
         <div class="temperature" data-sensor="temperature">--°</div>
-        <section class="loader">
-            <div>
-              <div>
-                <span class="one h6"></span>
-                <span class="two h3"></span>
-              </div>
-            </div>
-      
-            <div>
-              <div>
-                <span class="one h1"></span>
-              </div>
-            </div>
-      
-            <div>
-              <div>
-                <span class="two h2"></span>
-              </div>
-            </div>
-            <div>
-              <div>
-                <span class="one h4"></span>
-              </div>
-            </div>
-          </section>
-        
     </div>
 
     <div class="sensor-grid">
@@ -140,7 +124,7 @@
         <div class="sensor-item glass-effect">
             <div class="sensor-icon camera-status">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                    <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" fill="currentColor"/>
+                    <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45 1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" fill="currentColor"/>
                 </svg>
                 <span class="status-dot"></span>
             </div>
@@ -238,118 +222,119 @@
         </div>
     </nav>
 
+    <!-- Scripts en orden correcto -->
+    <!-- Socket.IO debe ir primero -->
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    
+    <!-- GSAP después -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/Observer.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    
+    <!-- AWS y MQTT -->
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1001.0.min.js"></script>
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    
+    <!-- Tus scripts de la aplicación al final -->
+    <script src="scripts/config.js"></script>
+    <script src="scripts/Data.js"></script>
     <script src="scripts/main.js"></script>
+
     <script>
-document.addEventListener('DOMContentLoaded', () => {
-    const securityValue = document.querySelector('.Security-status').nextElementSibling.nextElementSibling;
-    const securityDot = document.querySelector('.Security-status .status-dot');
-    const alertWidget = document.querySelector('.alert-widget .widget-status');
+        document.addEventListener('DOMContentLoaded', () => {
+            // Remover clase preload después de cargar
+            document.body.classList.remove('preload');
+            
+            // Asegurarse que los elementos principales estén visibles
+            const roomTemp = document.querySelector('.room-temp-container');
+            const siteContainer = document.querySelector('.site-container');
+            
+            if (roomTemp) {
+                roomTemp.style.display = 'flex';
+                roomTemp.style.visibility = 'visible';
+                roomTemp.style.opacity = '1';
+            }
+            
+            if (siteContainer) {
+                siteContainer.style.display = 'flex';
+                siteContainer.style.visibility = 'visible';
+                siteContainer.style.opacity = '1';
+            }
+            
+            // Asegurarse que la temperatura y el nombre sean visibles
+            const temperature = document.querySelector('.temperature');
+            const roomName = document.querySelector('.room-name');
+            
+            if (temperature) {
+                temperature.style.visibility = 'visible';
+                temperature.style.opacity = '1';
+            }
+            
+            if (roomName) {
+                roomName.style.visibility = 'visible';
+                roomName.style.opacity = '1';
+            }
+            
+            // Inicializar el gestor de dispositivos
+            window.deviceManager = new DeviceDataManager();
 
-    if (securityValue && securityDot && alertWidget) {
-        const faceSetupCompleted = localStorage.getItem('faceSetupCompleted');
-        
-        if (faceSetupCompleted === 'true') {
-            securityValue.textContent = 'Activa';
-            securityDot.style.backgroundColor = '#4CAF50';
-            securityDot.style.boxShadow = '0 0 10px #4CAF50';
-            alertWidget.textContent = '0 alertas';
-        } else {
-            securityValue.textContent = 'Inactiva';
-            securityDot.style.backgroundColor = '#FF5252';
-            securityDot.style.boxShadow = '0 0 10px #FF5252';
-            alertWidget.textContent = '1 alerta';
-        }
-    }
-});
-function updateDeviceStates(newStates) {
-    try {
-        const currentStates = JSON.parse(localStorage.getItem('deviceStates') || '{}');
-        const updatedStates = { ...currentStates, ...newStates };
-        localStorage.setItem('deviceStates', JSON.stringify(updatedStates));
-    } catch (error) {
-        console.error('Error updating device states:', error);
-    }
-}
+            // Cleanup al cerrar la página
+            window.addEventListener('beforeunload', () => {
+                if (window.deviceManager) {
+                    window.deviceManager.cleanup();
+                }
+            });
 
-updateDeviceStates({
-    temperature: "32°",
-    humidity: "24%",
+            // Mostrar animación de actualización al recibir datos
+            const updateIcon = document.querySelector('.update-icon');
+            const lastUpdate = document.querySelector('.last-update');
+            
+            if (updateIcon && lastUpdate) {
+                const showUpdateAnimation = () => {
+                    updateIcon.classList.add('updating');
+                    lastUpdate.classList.add('updating');
+                    setTimeout(() => {
+                        updateIcon.classList.remove('updating');
+                        lastUpdate.classList.remove('updating');
+                    }, 1000);
+                };
 
-});
+                // Observar cambios en el texto de última actualización
+                const observer = new MutationObserver((mutations) => {
+                    mutations.forEach((mutation) => {
+                        if (mutation.type === 'characterData' || mutation.type === 'childList') {
+                            showUpdateAnimation();
+                        }
+                    });
+                });
 
-function getAllSensorValues() {
-    const sensors = document.querySelectorAll('.sensor-item');
-    const states = {};
-
-    sensors.forEach(sensor => {
-        const label = sensor.querySelector('.sensor-label').textContent.toLowerCase();
-        const value = sensor.querySelector('.sensor-value').textContent;
-        
-        switch(label) {
-            case 'sensación corporal':
-                states.temperature = value;
-                break;
-            case 'indundacion':
-                states.flood = value;
-                break;
-            case 'fugas de gas':
-                states.gas = value;
-                break;
-            case 'humedad':
-                states.humidity = value;
-                break;
-            case 'fuego':
-                states.fire = value;
-                break;
-            case 'batería':
-                states.battery = value;
-                break;
-            case 'cámara':
-                states.camera = value;
-                break;
-            case 'seguridad':
-                states.security = value;
-                break;
-        }
-    });
-
-    states.generalStatus = document.querySelector('.status-widget .widget-status').textContent;
-    states.alerts = document.querySelector('.alert-widget .widget-status').textContent;
-    states.environmentalHealth = document.querySelector('.health-widget .widget-status').textContent;
-
-    return states;
-}
-
-async function updateAIContext() {
-    try {
-        const states = getAllSensorValues();
-        
-        localStorage.setItem('deviceStates', JSON.stringify(states));
-        
-        const response = await fetch('http://localhost:5000/api/updateStates', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(states)
+                observer.observe(document.querySelector('.last-update-text'), {
+                    characterData: true,
+                    childList: true,
+                    subtree: true
+                });
+            }
         });
+    </script>
 
-        if (!response.ok) {
-            throw new Error('Error updating AI context');
-        }
+    <!-- Justo antes del cierre del body -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Inicializar el gestor de dispositivos
+            if (!window.deviceManager) {
+                window.deviceManager = new DeviceDataManager();
+            }
+            
+            // Cleanup al cerrar la página
+            window.addEventListener('beforeunload', () => {
+                if (window.deviceManager) {
+                    window.deviceManager.cleanup();
+                }
+            });
 
-        console.log('AI context updated with current states:', states);
-    } catch (error) {
-        console.error('Error updating AI context:', error);
-    }
-}
-
-setInterval(updateAIContext, 5000);
-
-document.addEventListener('DOMContentLoaded', () => {
-    updateAIContext();
-});
-</script>
-<script type="module" src="scripts/Data.js"></script>
+            // Forzar una actualización inicial
+            window.deviceManager.forceUpdate();
+        });
+    </script>
 </body>
 </html>

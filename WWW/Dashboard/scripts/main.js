@@ -36,38 +36,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const roomTemp = document.querySelector('.room-temp-container');
     const widgets = document.querySelector('.widgets-container');
 
-    if (sensorGrid) {
-        const sensorTemplate = `
-            <div class="sensor-item glass-effect">
-                <div class="sensor-icon">🌡️</div>
-                <div class="sensor-label">Temperatura</div>
-                <div class="sensor-value" data-sensor="temperature">--°</div>
-            </div>
-            <div class="sensor-item glass-effect">
-                <div class="sensor-icon">💧</div>
-                <div class="sensor-label">Humedad</div>
-                <div class="sensor-value" data-sensor="humidity">--%</div>
-            </div>
-        `;
-        
-        if (!sensorGrid.querySelector('[data-sensor="temperature"]')) {
-            sensorGrid.insertAdjacentHTML('beforeend', sensorTemplate);
-        }
-    }
-
-    window.updateSensorValue = (sensorId, value) => {
-        const sensorElement = document.querySelector(`[data-sensor="${sensorId}"]`);
-        if (sensorElement) {
-            if (sensorId === 'temperature') {
-                sensorElement.textContent = `${value}°`;
-            } else if (sensorId === 'humidity') {
-                sensorElement.textContent = `${value}%`;
-            } else {
-                sensorElement.textContent = value;
-            }
-        }
-    };
-
     gsap.set([welcomeToast, errorToast], {
         visibility: 'hidden',
         opacity: 0,

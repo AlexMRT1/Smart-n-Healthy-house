@@ -1,0 +1,327 @@
+@import url('https://fonts.googleapis.com/css2?family=Parkinsans:wght@300..800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Mono:wght@100..900&family=Parkinsans:wght@300..800&display=swap');
+
+:root {
+    --primary-color: #1a1a1a;
+    --secondary-color: #333333;
+    --success-color: #4CAF50;
+    --error-color: #FF4444;
+    --warning-color: #FF9800;
+    --text-color: #1a1a1a;
+    --background-color: linear-gradient(to bottom, #f5f7fa, #e4e8ec);
+    --card-background: #ffffff;
+    --border-radius: 8px;
+    --shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+    --badge-color: #202020;
+    --glass-background: rgba(255, 255, 255, 0.2);
+    --glass-border: rgba(255, 255, 255, 0.3);
+    --glass-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --accent-blue: #4A90E2;
+    --toast-error: rgba(255, 87, 87, 0.95);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    width: 100%;
+}
+
+body {
+    font-family: 'Parkinsans', sans-serif;
+    background: var(--background-color);
+    color: var(--text-color);
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center horizontally */
+    justify-content: flex-start; /* Start from top for header */
+}
+
+.brand-header {
+    width: 100%;
+    background: var(--card-background);
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    padding: 1rem 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: center;
+}
+
+.brand-container {
+    width: min(100%, 1200px);
+    padding: 0 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 2rem;
+}
+
+.left-container {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.site-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.dev-badge {
+    background: var(--badge-color);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.report-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: var(--glass-background);
+    color: var(--primary-color);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-family: 'Parkinsans', sans-serif;
+    font-weight: 600;
+    backdrop-filter: blur(8px);
+    box-shadow: var(--glass-shadow);
+    transition: all 0.3s ease;
+    margin-left: auto;
+    text-decoration: none; /* Añadir esta línea */
+}
+
+.report-button:hover {
+    background: var(--toast-error);
+    color: white;
+    border-color: transparent;
+}
+
+.status-container {
+    flex: 1;
+    width: min(100%, 1200px);
+    margin: auto; /* Center vertically */
+    padding: 2rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center content horizontally */
+    justify-content: center; /* Center content vertically */
+}
+
+.system-status {
+    width: 100%;
+    margin-bottom: 2rem;
+}
+
+.system-status h1 {
+    font-size: 2rem;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.status-grid {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.status-card {
+    background: var(--card-background);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.card-header h3 {
+    font-size: 1.25rem;
+    color: var(--primary-color);
+}
+
+.status-indicator {
+    font-family: 'Noto Sans Mono', monospace;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    background: var(--warning-color);
+    color: white;
+}
+
+.status-indicator.online {
+    background: var(--success-color);
+}
+
+.status-indicator.offline {
+    background: var(--error-color);
+}
+
+.card-content p {
+    display: flex;
+    justify-content: space-between;
+    margin: 0.75rem 0;
+    color: var(--secondary-color);
+}
+
+.incidents-panel {
+    width: 100%;
+    background: var(--card-background);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+}
+
+.incidents-panel h2 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.incidents-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.clear-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: var(--glass-background);
+    color: var(--error-color);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-family: 'Parkinsans', sans-serif;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.clear-button:hover {
+    background: var(--error-color);
+    color: white;
+    border-color: transparent;
+}
+
+/* Update the base incident-item style */
+.incident-item {
+    padding: 1rem;
+    margin: 1rem 0;
+    border-radius: var(--border-radius);
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow);
+    background: var(--card-background);
+}
+
+/* Estilo para incidentes resueltos */
+.incident-item.resolved,
+.incident-item[data-success="true"] {
+    border-left: 4px solid var(--success-color);
+    background-color: rgba(76, 175, 80, 0.1);
+}
+
+/* Estilo para incidentes no resueltos */
+.incident-item.unresolved,
+.incident-item[data-success="false"] {
+    border-left: 4px solid var(--error-color);
+    background-color: rgba(255, 68, 68, 0.1);
+}
+
+/* Estilos del texto */
+.incident-item h3 {
+    color: var(--primary-color);
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+}
+
+.incident-item p {
+    color: var(--secondary-color);
+}
+
+.incident-date {
+    font-size: 0.875rem;
+    color: var(--secondary-color);
+    margin-top: 0.5rem;
+}
+
+.incident-status {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-top: 0.25rem;
+}
+
+/* Colores del estado */
+.resolved .incident-status,
+.incident-item[data-success="true"] .incident-status {
+    color: var(--success-color);
+}
+
+.unresolved .incident-status,
+.incident-item[data-success="false"] .incident-status {
+    color: var(--error-color);
+}
+
+.incident-item[data-status="resuelto"] {
+    border-left-color: var(--success-color);
+    background: rgba(76, 175, 80, 0.1);
+}
+
+.incident-item[data-status="sin-resolver"] {
+    border-left-color: var(--error-color);
+    background: rgba(255, 68, 68, 0.1);
+}
+
+.incident-item h3 {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+}
+
+.incident-date {
+    font-size: 0.875rem;
+    color: var(--secondary-color);
+    margin-top: 0.5rem;
+}
+
+.incident-status {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-top: 0.25rem;
+}
+
+.dev-only {
+    display: none !important; /* Added !important to ensure hiding */
+}
+
+/* Only show in developer mode */
+body[data-mode="developer"] .dev-only {
+    display: flex !important;
+}

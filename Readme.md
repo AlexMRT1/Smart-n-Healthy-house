@@ -64,30 +64,21 @@ para iniciar el servidor local de IA
 ## Paletas de colores
 la paleta de colores de la pagina tiene que mantener los siguientes colores.
 
-
 | Categoría                        | Color                  | Código HEX / RGBA                        | Visual                                     | Descripción                         |
 |----------------------------------|-------------------------|-------------------------------------------|---------------------------------------------|-------------------------------------|
 | **Fondo principal (gradiente)**  | Gris claro             | `#f5f7fa`                                 | ![color](https://fakeimg.pl/16x16/f5f7fa/?text=+) | Fondo superior                      |
 |                                  | Gris más oscuro        | `#e4e8ec`                                 | ![color](https://fakeimg.pl/16x16/e4e8ec/?text=+) | Fondo inferior                      |
-| **Texto y elementos oscuros**    | Negro suave            | `#1a1a1a`                                 | ![color](https://fakeimg.pl/16x16/1a1a1a/?text=+) | Texto principal                     |
-|                                  | Gris oscuro            | `#333333`                                 | ![color](https://fakeimg.pl/16x16/333333/?text=+) | Subtítulos, bordes                  |
-| **Blanco y transparencias**      | Blanco 10%             | `rgba(255, 255, 255, 0.1)`                | ![color](https://fakeimg.pl/16x16/ffffff/?text=+) | Simulado (sin transparencia)        |
-|                                  | Blanco 15%             | `rgba(255, 255, 255, 0.15)`               | ![color](https://fakeimg.pl/16x16/ffffff/?text=+) | Simulado (sin transparencia)        |
-|                                  | Blanco 20%             | `rgba(255, 255, 255, 0.2)`                | ![color](https://fakeimg.pl/16x16/ffffff/?text=+) | Simulado (sin transparencia)        |
-|                                  | Blanco 25%             | `rgba(255, 255, 255, 0.25)`               | ![color](https://fakeimg.pl/16x16/ffffff/?text=+) | Simulado (sin transparencia)        |
-|                                  | Blanco 30%             | `rgba(255, 255, 255, 0.3)`                | ![color](https://fakeimg.pl/16x16/ffffff/?text=+) | Simulado (sin transparencia)        |
 | **Colores de acento**            | Verde brillante        | `#4CAF50`                                 | ![color](https://fakeimg.pl/16x16/4CAF50/?text=+) | Estado positivo                     |
 |                                  | Naranja brillante      | `#FF9800`                                 | ![color](https://fakeimg.pl/16x16/FF9800/?text=+) | Alertas                             |
 |                                  | Rojo brillante         | `#FF4444`                                 | ![color](https://fakeimg.pl/16x16/FF4444/?text=+) | Errores o salud                     |
 |                                  | Rojo translúcido       | `rgba(255, 87, 87, 0.95)`                 | ![color](https://fakeimg.pl/16x16/ff5757/?text=+) | Toast de error (simulado)          |
 |                                  | Azul claro             | `#4A90E2`                                 | ![color](https://fakeimg.pl/16x16/4A90E2/?text=+) | Interfaz                            |
 |                                  | Azul intenso           | `#007bff`                                 | ![color](https://fakeimg.pl/16x16/007bff/?text=+) | Dispositivos                        |
-|                                  | Azul oscuro            | `#053146`                                 | ![color](https://fakeimg.pl/16x16/053146/?text=+) | Fondos oscuros                      |
-| **Colores secundarios**          | Gris medio             | `#666666`                                 | ![color](https://fakeimg.pl/16x16/666666/?text=+) | Texto secundario                    |
-|                                  | Gris oscuro            | `#2c3e50`                                 | ![color](https://fakeimg.pl/16x16/2c3e50/?text=+) | Contraste en fondos                 |
-| **Sombras**                      | Negro translúcido (10%)| `rgba(0, 0, 0, 0.1)`                      | ![color](https://fakeimg.pl/16x16/cccccc/?text=+) | Simulado (sin transparencia)        |
-|                                  | Negro translúcido (15%)| `rgba(0, 0, 0, 0.15)`                     | ![color](https://fakeimg.pl/16x16/bfbfbf/?text=+) | Simulado (sin transparencia)        |
-|                                  | Negro translúcido (8%) | `rgba(0, 0, 0, 0.08)`                     | ![color](https://fakeimg.pl/16x16/d9d9d9/?text=+) | Simulado (sin transparencia)        |
+| **Blanco y transparencias**      | Blanco 10%             | `rgba(255, 255, 255, 0.1)`                | ![color](https://fakeimg.pl/16x16/ffffff/?text=+) | Simulado (sin transparencia)        |
+|                                  | Blanco 15%             | `rgba(255, 255, 255, 0.15)`               | ![color](https://fakeimg.pl/16x16/ffffff/?text=+) | Simulado (sin transparencia)        |
+|                                  | Blanco 20%             | `rgba(255, 255, 255, 0.2)`                | ![color](https://fakeimg.pl/16x16/ffffff/?text=+) | Simulado (sin transparencia)        |
+|                                  | Blanco 25%             | `rgba(255, 255, 255, 0.25)`               | ![color](https://fakeimg.pl/16x16/ffffff/?text=+) | Simulado (sin transparencia)        |
+|                                  | Blanco 30%             | `rgba(255, 255, 255, 0.3)`                | ![color](https://fakeimg.pl/16x16/ffffff/?text=+) | Simulado (sin transparencia)        |
 | **Widgets (estados)**            | Verde translúcido      | `rgba(76, 175, 80, 0.1)`                  | ![color](https://fakeimg.pl/16x16/edf7ed/?text=+) | Estado (simulado)                  |
 |                                  | Naranja translúcido    | `rgba(255, 152, 0, 0.1)`                  | ![color](https://fakeimg.pl/16x16/fff3e0/?text=+) | Alerta (simulado)                  |
 |                                  | Rojo translúcido       | `rgba(255, 68, 68, 0.1)`                  | ![color](https://fakeimg.pl/16x16/ffeaea/?text=+) | Salud (simulado)                   |
@@ -96,6 +87,78 @@ la paleta de colores de la pagina tiene que mantener los siguientes colores.
 
 ## Appendix
 En la carpeta Assets estan ubicados logos y animaciones SVG, todas las imagenes SVG se guardaran ahi
+
+
+## Filosofía de Diseño - Smart'n Healthy House App y promocionamiento
+
+
+
+##  Paradigma de Diseño
+
+- **Neomorfismo Moderno:** Evolución del skeumorfismo y flat design.  
+- **Glassmorfismo:** Efectos de cristal con fondos difuminados.  
+- **Minimalismo Funcional:** Solo elementos esenciales, sin decoraciones innecesarias.  
+
+## Sistema de Animaciones
+
+- **Microinteracciones:** Feedback sutil y natural.  
+- **Transiciones Suaves:** Curvas *easing* naturales (`cubic-bezier`).  
+- **Performance First:** Optimización vía `transform` y `opacity` para uso eficiente de GPU.  
+- **Reducción de Motion:** Respeto a `prefers-reduced-motion` del usuario.  
+
+##  Sistema de Layout
+
+- **CSS Grid Avanzado:** Rejilla flexible y adaptable.  
+- **Contenedores Fluidos:** Uso de unidades relativas y `clamp()`.  
+- **Sistema de Capas:** Organización con `z-index` estratégico.  
+- **Espaciado Consistente:** Variables CSS para `padding` y `margin`.  
+
+##  Filosofía de Responsividad
+
+- **Mobile First:** Diseño base orientado a dispositivos móviles.  
+- **Breakpoints Flexibles:** Definidos por contenido, no por dispositivos.  
+- **Layout Adaptativo:** Reorganización dinámica del contenido.  
+- **Tipografía Fluida:** Escalado de texto con `clamp()`.  
+
+##  Principios de Interacción
+
+- **Estado Persistente:** Feedback visual constante y predecible.  
+- **Gestos Naturales:** Interacciones basadas en comportamientos móviles.  
+- **Jerarquía Clara:** Diferenciación visual entre estados.  
+- **Accesibilidad Integrada:** No como algo opcional, sino esencial.  
+
+##  Sistema de Color
+
+- **Neutros Dominantes:** Base en grises, blancos y fondos suaves.  
+- **Acentos Funcionales:** Colores específicos para acciones y estados.  
+- **Transparencias Significativas:** Uso del canal alpha para jerarquía visual.  
+- **Alto Contraste:** Cumplimiento de estándares WCAG.  
+
+##  Consistencia Visual
+
+- **Sistema de Componentes:** Elementos reutilizables como tarjetas y widgets.  
+- **Tokens de Diseño:** Variables CSS para valores clave (colores, tamaños, etc.).  
+- **Elevación Coherente:** Uso uniforme de sombras para profundidad.  
+- **Bordes y Radios:** Sistema consistente de redondeo.  
+
+##  Rendimiento y Optimización
+
+- **Lazy Loading:** Carga progresiva de contenido.  
+- **CSS Modular:** Estructura basada en componentes.  
+- **Optimización de Assets:** Uso de SVGs y compresión eficiente.  
+- **Caché Estratégico:** Uso inteligente del almacenamiento local.  
+
+##  Experiencia Progresiva
+
+- **Estados de Carga:** Feedback visual durante operaciones asíncronas.  
+- **Fallbacks Elegantes:** Degradación funcional con estilo.  
+- **Offline First:** Funcionalidad básica incluso sin conexión.  
+- **Actualizaciones Suaves:** Transiciones limpias entre estados de datos.  
+
+---
+
+Esta filosofía prioriza una experiencia moderna, eficiente y accesible, manteniendo un alto nivel de sofisticación visual y funcional.
+
 
 ## Aviso
 

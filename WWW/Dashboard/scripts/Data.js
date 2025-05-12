@@ -1,16 +1,17 @@
 class DeviceDataManager {
     constructor() {
-        this.ws = null;
+        this.socket = null;
         this.firstMessageReceived = false;
         this.reconnectAttempts = 0;
         this.maxReconnectAttempts = 5;
         this.reconnectDelay = 3000;
 
         this.currentStates = {
-            temperature: null,
+            temperature: '--',
+            humidity: '--',
+            deviceName: "Smart'n healthy House Test model",
             flood: "No detectada",
             gas: "No detectada",
-            humidity: '<span style="color: #FF5252;">ERROR</span>',
             fire: "No detectado",
             battery: null,
             camera: "Inactiva",
@@ -20,88 +21,172 @@ class DeviceDataManager {
             environmentalHealth: "98%"
         };
 
+        // Asegurarnos de que los elementos existen
         this.elements = {
-            temperature: document.querySelector('.room-temp-container .temperature'),
-            loader: document.querySelector('.room-temp-container .loader'),
-            roomName: document.querySelector('.room-temp-container .room-name')
+            temperature: document.querySelector('[data-sensor="temperature"]'),
+            humidity: document.querySelector('[data-sensor="humidity"]'),
+            roomName: document.querySelector('.room-name'),
+            loader: document.querySelector('.loader'),
+            spinnerContainer: document.querySelector('.spinner-container'),
+            lastUpdateText: document.querySelector('.last-update-text'),
+            updateIcon: document.querySelector('.update-icon')
         };
 
-        // Initialize WebSocket connection
-        this.initializeWebSocket();
+        // Verificar si los elementos críticos existen
+        if (!this.elements.lastUpdateText) {
+            console.error('Elemento last-update-text no encontrado en el DOM');
+        }
+
+        // Inicializar lastUpdate con la fecha actual
+        this.lastUpdate = new Date();
+        this.updateInterval = null;
+
+        // Iniciar actualizaciones
+        this.startUpdateInterval();
+        this.initializeSocket();
     }
 
-    initializeWebSocket() {
-        try {
-            console.log('Initializing WebSocket connection...');
-            this.ws = new WebSocket('ws://localhost:3000');
+    startUpdateInterval() {
+        // Limpiar intervalo existente
+        if (this.updateInterval) {
+            clearInterval(this.updateInterval);
+        }
+
+        // Actualización inicial
+        this.updateLastUpdateText();
+        
+        // Crear nuevo intervalo
+        this.updateInterval = setInterval(() => {
+            this.updateLastUpdateText();
+        }, 1000); // Actualizar cada segundo
+    }
+
+    updateLastUpdateText() {
+        if (!this.elements.lastUpdateText) {
+            console.warn('Elemento last-update-text no encontrado');
+            return;
+        }
+
+        const now = new Date();
+        const diff = now - this.lastUpdate;
+        const seconds = Math.floor(diff / 1000);
+        
+        let text = '';
+        if (seconds < 30) {
+            text = 'Hace un momento';
+        } else if (seconds < 60) {
+            text = `Hace ${seconds} segundos`;
+        } else if (seconds < 3600) {
+            const minutes = Math.floor(seconds / 60);
+            text = `Hace ${minutes} ${minutes === 1 ? 'minuto' : 'minutos'}`;
+        } else if (seconds < 86400) {
+            const hours = Math.floor(seconds / 3600);
+            text = `Hace ${hours} ${hours === 1 ? 'hora' : 'horas'}`;
+        } else {
+            const days = Math.floor(seconds / 86400);
+            text = `Hace ${days} ${days === 1 ? 'día' : 'días'}`;
+        }
+
+        // Solo actualizar si el texto ha cambiado
+        if (this.elements.lastUpdateText.textContent !== text) {
+            this.elements.lastUpdateText.textContent = text;
             
-            this.ws.onopen = this.handleWebSocketOpen.bind(this);
-            this.ws.onmessage = this.handleWebSocketMessage.bind(this);
-            this.ws.onclose = this.handleWebSocketClose.bind(this);
-            this.ws.onerror = this.handleWebSocketError.bind(this);
+            // Animar el icono
+            if (this.elements.updateIcon) {
+                this.elements.updateIcon.classList.remove('spinning');
+                // Forzar un reflow
+                void this.elements.updateIcon.offsetWidth;
+                // Aplicar la animación
+                this.elements.updateIcon.classList.add('spinning');
+            }
+        }
+    }
+
+    forceUpdate() {
+        this.lastUpdate = new Date();
+        this.updateLastUpdateText();
+    }
+
+    initializeSocket() {
+        try {
+            console.log('Initializing Socket.IO connection...');
+            this.socket = io('http://localhost:3000', {
+                transports: ['websocket'],
+                reconnection: true,
+                reconnectionAttempts: this.maxReconnectAttempts,
+                reconnectionDelay: this.reconnectDelay
+            });
+            
+            this.socket.on('connect', this.handleSocketOpen.bind(this));
+            this.socket.on('sensorUpdate', this.handleSocketMessage.bind(this));
+            this.socket.on('disconnect', this.handleSocketClose.bind(this));
+            this.socket.on('connect_error', this.handleSocketError.bind(this));
             
             this.updateConnectionStatus('connecting');
         } catch (error) {
-            console.error('WebSocket initialization error:', error);
+            console.error('Socket initialization error:', error);
             this.handleConnectionError('Error inicializando conexión');
         }
     }
 
-    handleWebSocketOpen() {
-        console.log('WebSocket connected successfully');
+    handleSocketOpen() {
+        console.log('Socket.IO connected successfully');
         this.updateConnectionStatus('connected');
+        
+        if (this.elements.spinnerContainer) {
+            gsap.to(this.elements.spinnerContainer, {
+                autoAlpha: 0,
+                duration: 0.5,
+                onComplete: () => {
+                    this.elements.spinnerContainer.style.display = 'none';
+                }
+            });
+        }
+
         this.reconnectAttempts = 0;
-        this.sendTestMessage();
     }
 
-    handleWebSocketMessage(event) {
+    handleSocketMessage(data) {
         try {
-            const data = JSON.parse(event.data);
-            console.log('WebSocket message received:', data);
-            
-            if (data.topic && data.message) {
-                let parsedMessage;
-                try {
-                    parsedMessage = typeof data.message === 'string' ? 
-                        JSON.parse(data.message) : data.message;
-                } catch (e) {
-                    parsedMessage = data.message;
-                }
-                
+            console.log('Socket message received:', data);
+            if (data.message) {
+                // Actualizar timestamp
+                this.lastUpdate = new Date();
+                // Forzar actualización inmediata
+                this.updateLastUpdateText();
+
                 if (!this.firstMessageReceived) {
                     this.firstMessageReceived = true;
                     this.handleFirstMessage();
                 }
-                
-                this.updateStates(parsedMessage);
-                this.updateUI(parsedMessage);
+                this.updateUI(data.message);
             }
         } catch (error) {
-            console.error('Error processing WebSocket message:', error);
+            console.error('Error processing socket message:', error);
         }
     }
 
-    handleWebSocketClose() {
-        console.log('WebSocket connection closed');
+    handleSocketClose() {
+        console.log('Socket.IO connection closed');
         this.updateConnectionStatus('disconnected');
         
         if (this.reconnectAttempts < this.maxReconnectAttempts) {
             this.reconnectAttempts++;
             console.log(`Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})...`);
-            setTimeout(() => this.initializeWebSocket(), this.reconnectDelay);
+            setTimeout(() => this.initializeSocket(), this.reconnectDelay);
         } else {
             this.handleConnectionError('Se excedió el número máximo de intentos de reconexión');
         }
     }
 
-    handleWebSocketError(error) {
-        console.error('WebSocket error:', error);
+    handleSocketError(error) {
+        console.error('Socket.IO error:', error);
         this.handleConnectionError('Error de conexión');
     }
 
     sendMessage(topic, message) {
-        if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
-            console.error('WebSocket not connected');
+        if (!this.socket || !this.socket.connected) {
+            console.error('Socket.IO not connected');
             return false;
         }
 
@@ -111,7 +196,7 @@ class DeviceDataManager {
                 message: typeof message === 'string' ? message : JSON.stringify(message)
             };
             
-            this.ws.send(JSON.stringify(payload));
+            this.socket.emit('sensorUpdate', payload);
             return true;
         } catch (error) {
             console.error('Error sending message:', error);
@@ -119,34 +204,14 @@ class DeviceDataManager {
         }
     }
 
-    sendTestMessage() {
-        const testMessage = {
-            type: 'test',
-            clientId: `WEB_${Math.random().toString(16).substr(2, 8)}`,
-            timestamp: Date.now(),
-            data: {
-                temperature: 25,
-                humidity: 60
-            }
-        };
-
-        console.log('Sending test message:', testMessage);
-        
-        if (this.sendMessage('testeo/', testMessage)) {
-            console.log('Test message sent successfully');
-        } else {
-            console.error('Failed to send test message');
-        }
-    }
-
     updateStates(data) {
         const humidityValue = data.humedad || data.humidity;
         if (humidityValue === undefined || humidityValue === null) {
-            this.currentStates.humidity = '<span style="color: #FF5252;">ERROR</span>';
+            this.currentStates.humidity = "--";
         } else {
             const humidityNum = parseFloat(humidityValue);
             if (isNaN(humidityNum)) {
-                this.currentStates.humidity = '<span style="color: #FF5252;">ERROR</span>';
+                this.currentStates.humidity = "--";
             } else {
                 this.currentStates.humidity = `${humidityNum.toFixed(1)}%`;
             }
@@ -190,28 +255,33 @@ class DeviceDataManager {
             this.handleFirstMessage();
         }
 
-        // Actualizar temperatura
         if (data.temperature !== undefined) {
-            const tempElement = document.querySelector('.room-temp-container .temperature');
-            if (tempElement) {
-                tempElement.textContent = `${data.temperature}°`;
-            }
-            // También actualizar el sensor de sensación corporal
-            const bodyTempElement = document.querySelector('.sensor-item:first-child .sensor-value');
-            if (bodyTempElement) {
-                bodyTempElement.textContent = `${data.temperature}°`;
+            const tempValue = parseFloat(data.temperature);
+            if (!isNaN(tempValue)) {
+                this.currentStates.temperature = tempValue;
+                if (this.elements.temperature) {
+                    this.elements.temperature.textContent = `${tempValue}°`;
+                    this.elements.temperature.style.color = '#1a1a1a';
+                }
             }
         }
 
-        // Actualizar humedad
-        if (data.humidity !== undefined) {
-            const humidityElement = document.querySelector('.sensor-value[data-sensor="humidity"]');
-            if (humidityElement) {
-                const humidityValue = parseFloat(data.humidity);
-                if (!isNaN(humidityValue)) {
-                    humidityElement.innerHTML = `${humidityValue.toFixed(1)}%`;
+        if (data.humidity !== undefined || data.humedad !== undefined) {
+            const humValue = parseFloat(data.humidity || data.humedad);
+            if (!isNaN(humValue)) {
+                this.currentStates.humidity = humValue;
+                const humidityElement = document.querySelector('[data-sensor="humidity"]');
+                if (humidityElement) {
+                    humidityElement.textContent = `${humValue}%`;
+                    humidityElement.style.color = '#1a1a1a';
                 }
             }
+        }
+
+        const roomNameElement = document.querySelector('.room-name');
+        if (roomNameElement) {
+            roomNameElement.textContent = data.deviceName || "Smart'n healthy House Test model";
+            roomNameElement.style.color = '#1a1a1a';
         }
 
         this.updateSensorDisplays();
@@ -235,36 +305,98 @@ class DeviceDataManager {
         });
     }
 
-    handleFirstMessage() {
-        gsap.to(this.elements.loader, {
-            opacity: 0,
-            duration: 0.3,
-            onComplete: () => {
-                this.elements.loader.style.display = 'none';
-                this.elements.temperature.style.display = 'block';
-                this.elements.roomName.style.display = 'block';
-
-                gsap.from([this.elements.temperature, this.elements.roomName], {
-                    opacity: 0,
-                    y: 20,
-                    duration: 0.3,
-                    stagger: 0.1
-                });
+    updateValue(sensorId, value) {
+        const elements = document.querySelectorAll(`[data-sensor="${sensorId}"]`);
+        elements.forEach(element => {
+            if (element) {
+                element.textContent = value;
+                element.style.color = '#1a1a1a';
             }
         });
     }
 
-    updateConnectionStatus(status) {
-        if (!this.elements.temperature) return;
+    handleFirstMessage() {
+        // Ocultar spinner principal
+        const spinnerContainer = document.querySelector('.spinner-container');
+        if (spinnerContainer) {
+            gsap.to(spinnerContainer, {
+                opacity: 0,
+                duration: 0.3,
+                onComplete: () => {
+                    spinnerContainer.style.display = 'none';
+                }
+            });
+        }
 
-        const statusMessages = {
-            connecting: '<span style="color: #FFA500;">Conectando al servidor...</span>',
-            connected: '<span style="color: #4CAF50;">Conectado</span>',
-            disconnected: '<span style="color: #FF5252;">Desconectado</span>',
-            offline: '<span style="color: #FF5252;">Servidor no disponible</span>'
+        // Mostrar contenedor de temperatura
+        const tempContainer = document.querySelector('.room-temp-container');
+        const temperature = document.querySelector('.temperature');
+        const roomName = document.querySelector('.room-name');
+
+        if (tempContainer && temperature && roomName) {
+            gsap.set([tempContainer, temperature, roomName], {
+                display: 'flex',
+                visibility: 'visible',
+                opacity: 0,
+                y: 20
+            });
+
+            gsap.to([tempContainer, temperature, roomName], {
+                opacity: 1,
+                y: 0,
+                duration: 0.5,
+                stagger: 0.1,
+                ease: "power2.out"
+            });
+        }
+    }
+
+    updateConnectionStatus(status) {
+        const statusDot = document.querySelector('.status-dot');
+        const statusText = document.querySelector('.status-text');
+        
+        if (!statusDot || !statusText) return;
+
+        const states = {
+            connecting: {
+                dot: '#FFA500',  // Naranja
+                text: 'Conectando...',
+                color: '#FFA500'
+            },
+            connected: {
+                dot: '#4CAF50',  // Verde
+                text: 'Conectado',
+                color: '#1a1a1a' // Negro
+            },
+            disconnected: {
+                dot: '#FF5252',  // Rojo
+                text: 'Desconectado',
+                color: '#FF5252'
+            }
         };
 
-        this.elements.temperature.innerHTML = statusMessages[status] || statusMessages.offline;
+        const state = states[status] || states.disconnected;
+        
+        statusDot.style.backgroundColor = state.dot;
+        statusText.textContent = state.text;
+        statusText.style.color = state.color;
+
+        // Actualizar colores de elementos según el estado
+        if (status === 'connected') {
+            if (this.elements.temperature) {
+                this.elements.temperature.style.color = '#1a1a1a';
+            }
+            if (this.elements.roomName) {
+                this.elements.roomName.style.color = '#1a1a1a';
+            }
+        } else {
+            if (this.elements.temperature) {
+                this.elements.temperature.style.color = state.color;
+            }
+            if (this.elements.roomName) {
+                this.elements.roomName.style.color = state.color;
+            }
+        }
     }
 
     handleConnectionError(message) {
@@ -280,9 +412,88 @@ class DeviceDataManager {
             this.elements.roomName.style.display = 'block';
         }
     }
+
+    connect() {
+        const clientId = 'dashboard_' + Math.random().toString(16).substr(2, 8);
+        
+        AWS.config.region = awsConfig.region;
+        const credentials = new AWS.CognitoIdentityCredentials({
+            IdentityPoolId: awsConfig.identityPoolId
+        });
+
+        AWS.config.credentials = credentials;
+
+        credentials.get((err) => {
+            if (err) {
+                console.error('Error getting AWS credentials:', err);
+                this.updateConnectionStatus(false);
+                return;
+            }
+
+            this.client = mqtt.connect(
+                `wss://${awsConfig.endpoint}/mqtt`,
+                {
+                    clientId: clientId,
+                    protocol: 'wss',
+                    keepalive: 60,
+                    protocolVersion: 4,
+                    clean: true,
+                    reconnectPeriod: 5000,
+                    connectTimeout: 5000,
+                    will: {
+                        topic: this.topic + 'status',
+                        payload: JSON.stringify({
+                            deviceId: clientId,
+                            status: 'disconnected',
+                            timestamp: new Date().toISOString()
+                        }),
+                        qos: 0,
+                        retain: false
+                    }
+                }
+            );
+
+            this.client.on('connect', () => {
+                console.log('Conectado a AWS IoT Core');
+                this.updateConnectionStatus(true);
+
+                this.client.subscribe(this.topic + '#', (err) => {
+                    if (!err) {
+                        console.log('Suscrito a', this.topic + '#');
+                        this.client.publish(this.topic + 'status', JSON.stringify({
+                            deviceId: clientId,
+                            status: 'connected',
+                            timestamp: new Date().toISOString()
+                        }));
+                    }
+                });
+            });
+        });
+    }
+
+    cleanup() {
+        if (this.updateInterval) {
+            clearInterval(this.updateInterval);
+            this.updateInterval = null;
+        }
+        if (this.socket) {
+            this.socket.disconnect();
+        }
+    }
+
+    debug() {
+        console.log('Estado actual:', {
+            lastUpdate: this.lastUpdate,
+            updateInterval: !!this.updateInterval,
+            elements: {
+                lastUpdateText: !!this.elements.lastUpdateText,
+                updateIcon: !!this.elements.updateIcon
+            }
+        });
+    }
 }
 
-// Initialize when DOM is ready
+// Crear una instancia global cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', () => {
     window.deviceManager = new DeviceDataManager();
 });
