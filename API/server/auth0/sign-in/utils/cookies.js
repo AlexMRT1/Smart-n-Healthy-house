@@ -1,15 +1,30 @@
 export function setCookie(name, value, days = 7) {
-  const expires = new Date(Date.now() + days * 864e5).toUTCString();
-  document.cookie = name + '=' + encodeURIComponent(value) + '; expires=' + expires + '; path=/';
+  try {
+    const expires = new Date(Date.now() + days * 864e5).toUTCString();
+    document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Strict`;
+    console.log(`Cookie set: ${name}`); // Debug log
+  } catch (error) {
+    console.error(`Error setting cookie ${name}:`, error);
+  }
 }
 
 export function getCookie(name) {
-  return document.cookie.split('; ').reduce((r, v) => {
-    const parts = v.split('=');
-    return parts[0] === name ? decodeURIComponent(parts[1]) : r;
-  }, '');
+  try {
+    const value = document.cookie
+      .split('; ')
+      .find(row => row.startsWith(`${name}=`))
+      ?.split('=')[1];
+    return value ? decodeURIComponent(value) : '';
+  } catch (error) {
+    console.error(`Error getting cookie ${name}:`, error);
+    return '';
+  }
 }
 
 export function deleteCookie(name) {
-  setCookie(name, '', -1);
+  document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
+}
+
+export function checkCookies() {
+  console.log('Current cookies:', document.cookie); // Debug function
 }

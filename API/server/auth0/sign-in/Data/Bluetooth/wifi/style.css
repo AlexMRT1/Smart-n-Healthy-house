@@ -1,0 +1,481 @@
+:root {
+            --gradient-bg: linear-gradient(to bottom, #f5f7fa, #e4e8ec);
+            --primary-color: #4a90e2;
+            --primary-dark: #357abd;
+            --error-color: #FF4444;
+            --success-color: #4CAF50;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: var(--gradient-bg);
+            font-family: system-ui, -apple-system, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .site-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 120%;
+            padding: 1rem;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start; /* Cambiado a flex-start */
+            padding-left: 2rem; /* Añadido padding izquierdo */
+        }
+
+        .site-title {
+            font-size: clamp(1.2rem, 4vw, 1.5rem);
+            font-weight: bold;
+            color: #1a1a1a;
+            margin-left: 1rem;
+        }
+
+        .beta-badge {
+            background: var(--primary-color);
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-left: 0.5rem;
+            vertical-align: middle;
+        }
+
+        .networks-container {
+            margin: 80px auto 0;
+            padding: 2rem;
+            width: 98%; /* Increased from 100% */
+            max-width: 1800px; /* Increased from 1400px */
+            min-height: 80vh;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            display: grid;
+            grid-template-columns: 0.4fr 1.2fr;
+            gap: 2rem;
+            align-items: center;
+            justify-content: center;
+            min-height: 80vh;
+        }
+
+        .model-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            border-right: 1px solid rgba(0, 0, 0, 0.1);
+            position: relative;
+            min-width: 600px;
+            height: 100%;
+        }
+
+        #three-container {
+            width: 100%;
+            height: 500px; /* Made taller for larger model display */
+            margin-bottom: 2rem;
+        }
+
+        .panel-title {
+            font-size: 1.5rem;
+            color: #333;
+            margin-top: 1rem;
+            text-align: center;
+            position: absolute;
+            bottom: 2rem;
+        }
+
+        .networks-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Center wifi elements */
+            justify-content: flex-start;
+            padding: 2rem;
+            overflow-y: auto;
+            max-height: 75vh;
+            width: 100%;
+        }
+
+        .network-item {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 0.8rem auto;
+            max-width: 1200px; /* Increased from 900px */
+            width: 90%; /* Slightly reduced for better centering */
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .network-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .network-item.expanded {
+            margin-bottom: 2rem;
+        }
+
+        .network-header {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            align-items: center;
+            gap: 1rem;
+        }
+
+    .wifi-icon {
+    width: 32px;
+    height: 32px;
+    opacity: 0.8;
+    transition: opacity 0.3s;
+}
+.wifi-icon path {
+    opacity: 0.3;
+    fill: currentColor;
+}
+
+/* Bottom arc always visible */
+.wifi-icon .wifi-arc-3 {
+    opacity: 1;
+}
+        .wifi-icon path:nth-child(1) {
+            opacity: 0.3;
+            fill: currentColor;
+        }
+
+        .wifi-icon path:nth-child(2) {
+            opacity: 0.3;
+            fill: currentColor;
+        }
+
+        .wifi-icon path:nth-child(3) {
+            opacity: 0.3;
+            fill: currentColor;
+        }
+
+ .wifi-icon.strength-medium .wifi-arc-2,
+.wifi-icon.strength-high .wifi-arc-2 {
+    opacity: 1;
+}
+
+/* Top arc only visible for high */
+.wifi-icon.strength-high .wifi-arc-1 {
+    opacity: 1;
+}
+
+        .wifi-icon.strength-low path:nth-child(1) {
+            opacity: 1;
+        }
+
+        .network-info {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .network-name {
+            font-size: 1.1rem;  /* Slightly larger text */
+            font-weight: 500;
+            color: #333;
+            margin: 0;
+        }
+
+        .security-icon {
+            width: 20px;
+            height: 20px;
+            fill: #666;
+            margin-left: auto;
+        }
+
+        .refresh-button {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s;
+        }
+
+        .refresh-button:hover {
+            background: var(--primary-dark);
+        }
+
+        .refresh-button svg {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+
+        .loading {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .status-text {
+            text-align: center;
+            color: #666;
+            margin: 1rem 0;
+            font-size: 1.1rem;
+            animation: fadeInOut 2s ease-in-out infinite;
+        }
+
+        .network-item.expanded .password-container {
+            display: block;
+        }
+
+        .password-container {
+            margin-top: 1rem;
+            background: #f5f7fa;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+
+        /* Estilos para la barra de desplazamiento */
+        .networks-panel::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .networks-panel::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 4px;
+        }
+
+        .networks-panel::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 4px;
+        }
+
+        .password-input-container {
+            position: relative;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .password-input {
+            width: 100%;
+            padding: 0.8rem;
+            padding-right: 40px;
+            border: 2px solid var(--primary-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            box-sizing: border-box;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.6;
+            transition: opacity 0.3s;
+            width: 36px;
+            height: 36px;
+        }
+
+        .eye-icon {
+            fill: currentColor;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .password-input:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.3);
+        }
+
+        .toggle-password:hover {
+            opacity: 1;
+        }
+
+        .eye-icon .eye-closed {
+            display: none;
+        }
+
+        .eye-icon.show-password .eye-open {
+            display: none;
+        }
+
+        .eye-icon.show-password .eye-closed {
+            display: block;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 1rem;
+            margin: 0 -0.5rem;
+            padding: 0 0.5rem;
+        }
+
+        .connect-button, .cancel-button {
+            flex: 1;
+            padding: 0.8rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .connect-button {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .connect-button:hover {
+            background: var(--primary-dark);
+        }
+
+        .cancel-button {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .cancel-button:hover {
+            background: #d0d0d0;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+
+        .connection-status {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            z-index: 1000;
+            display: none;
+        }
+
+        .connection-status.visible {
+            display: block;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { transform: translate(-50%, 20px); opacity: 0; }
+            to { transform: translate(-50%, 0); opacity: 1; }
+        }
+
+/* Update existing media query for mobile */
+@media screen and (max-width: 768px) {
+    .networks-container {
+        grid-template-columns: 1fr;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    .model-panel {
+        display: none; /* Hide the model panel completely */
+    }
+
+    .networks-panel {
+        padding: 1rem;
+        max-height: none;
+        margin-top: 60px; /* Space for header */
+        height: calc(100vh - 60px); /* Full height minus header */
+        overflow-y: auto;
+    }
+
+    .network-item {
+        width: calc(100% - 2rem);
+        padding: 1rem;
+        margin: 0.5rem 1rem;
+        border-radius: 8px;
+    }
+
+    .site-container {
+        width: 100%;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    body {
+        background: var(--gradient-bg);
+        padding: 0;
+        margin: 0;
+    }
+
+    /* Adjust scroll behavior */
+    .networks-panel::-webkit-scrollbar {
+        width: 4px;
+    }
+}
+
+/* For even smaller screens */
+@media screen and (max-width: 380px) {
+    .network-header {
+        gap: 0.5rem;
+    }
+
+    .wifi-icon {
+        width: 24px;
+        height: 24px;
+    }
+
+    .network-name {
+        font-size: 1rem;
+    }
+
+    .security-icon {
+        width: 16px;
+        height: 16px;
+    }
+}
+
+/* Fix for iOS input zoom */
+@media screen and (max-width: 768px) {
+    input[type="password"],
+    input[type="text"] {
+        font-size: 16px !important;
+    }
+}

@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buscando dispositivos - Smart'n Healthy House</title>
+    <link rel="icon" 
+        type="image/png" 
+        href="/WWW/Assets/logo1Black.svg"
+        media="(prefers-color-scheme: light)" />
+    
+  <link rel="icon" 
+        type="image/png" 
+        href="/WWW/Assets/logo1White.svg" 
+        media="(prefers-color-scheme: dark)" />
+  <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin-allow-popups">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <style>
+        :root {
+            --gradient-bg: linear-gradient(to bottom, #f5f7fa, #e4e8ec);
+            --blue-accent: #4A90E2;
+            --primary-color: #4a90e2;
+            --primary-dark: #357abd;
+        }
+        
+        .site-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: var(--padding-mobile);
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            z-index: 3000; /* Aumentado para estar por encima del menú */
+        }
+
+        .site-title {
+            font-size: clamp(1.2rem, 4vw, 1.5rem);
+            font-weight: bold;
+            color: #1a1a1a;
+            margin-right: 2rem;
+            z-index: 3000; /* Aumentado para estar por encima del menú */
+        }
+
+        .beta-badge {
+            background: var(--primary-color);
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            margin-left: 0.5rem;
+            vertical-align: middle;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            background: var(--gradient-bg);
+            font-family: system-ui, -apple-system, sans-serif;
+            text-align: center;
+        }
+
+        .animation-container {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            margin: 2rem auto;
+        }
+
+        .bluetooth-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-47%, -50%);
+            width: 60px;
+            height: 60px;
+            fill: var(--blue-accent);
+            z-index: 2;
+        }
+
+        .pulse-ring {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 3px solid var(--blue-accent);
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translate(-50%, -50%);
+            }
+            50% {
+                transform: translate(-50%, calc(-50% - 10px));
+            }
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(0.8);
+                opacity: 1;
+                box-shadow: 0 0 0 0 rgba(74, 144, 226, 0.7);
+            }
+            70% {
+                transform: scale(1);
+                opacity: 0.6;
+                box-shadow: 0 0 0 60px rgba(74, 144, 226, 0);
+            }
+            100% {
+                transform: scale(0.8);
+                opacity: 1;
+                box-shadow: 0 0 0 0 rgba(74, 144, 226, 0);
+            }
+        }
+        .success-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-47%, -50%);
+    width: 70px;
+    height: 70px;
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    display: none;
+}
+
+.success-icon.visible {
+    opacity: 1;
+    display: block;
+}
+        h1 {
+            color: #333;
+            font-size: 1.5rem;
+            margin: 0 0 1rem;
+        }
+
+        .status-text {
+            color: #666;
+            margin: 1rem 0;
+            animation: fadeInOut 2s ease-in-out infinite;
+        }
+
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .bluetooth-icon, .pulse-ring, .status-text {
+                animation: none;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .animation-container {
+                width: 120px;
+                height: 120px;
+            }
+            
+            .bluetooth-icon {
+                width: 40px;
+                height: 40px;
+            }
+        }
+
+        .success-animation {
+            border-color: #4CAF50;
+            animation: success 0.5s ease-in-out forwards;
+        }
+
+        .error-animation {
+            border-color: #FF4444;
+            animation: error 0.5s ease-in-out forwards;
+        }
+
+        @keyframes success {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { 
+                transform: scale(1);
+                box-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
+            }
+        }
+
+        @keyframes error {
+            0%, 100% { transform: scale(1); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .error-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-47%, -50%);
+            width: 70px;
+            height: 70px;
+            fill: #FF4444;
+            z-index: 2;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            display: none;
+        }
+
+        .error-icon.visible {
+            opacity: 1;
+            display: block;
+        }
+
+        .search-button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .search-button:hover {
+            background: var(--primary-dark);
+        }
+
+        .search-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .brave .search-button {
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div class="site-container">
+        <div>
+            <svg xmlns="http://www.w3.org/2000/svg" width="60px" height="60px" viewBox="0 0 377 331" version="1.1">
+            <path d="M 162.500 42.798 C 159.750 44.316, 154.575 47.833, 151 50.613 C 81.060 104.999, 44.434 134.108, 35.750 142.209 C 30.337 147.259, 29.803 149.894, 33.455 153.545 C 38.879 158.970, 42.571 156.993, 74.500 131.564 C 85.500 122.803, 98.550 112.420, 103.500 108.490 C 108.450 104.560, 123.616 92.513, 137.203 81.718 C 167.067 57.990, 169.036 56.640, 173.532 56.809 C 178.376 56.991, 181.005 58.603, 193.500 69.054 C 205.819 79.357, 216.640 88.107, 222.252 92.301 L 226 95.102 226 85.265 L 226 75.428 218.750 69.479 C 198.188 52.606, 185.170 42.565, 182.282 41.352 C 176.741 39.024, 168.203 39.648, 162.500 42.798 M 241.667 41.667 C 241.300 42.033, 241.005 56.996, 241.011 74.917 L 241.022 107.500 268.294 129.817 C 301.879 157.299, 303.153 158.191, 306.951 156.867 C 310.092 155.772, 312.663 153.322, 313.106 151 C 313.743 147.661, 311.477 144.857, 301.720 136.910 C 296.099 132.332, 283.288 121.678, 273.250 113.234 L 255 97.880 255 69.440 L 255 41 248.667 41 C 245.183 41, 242.033 41.300, 241.667 41.667 M 167.383 133.982 C 166.218 134.453, 162.121 137.132, 158.278 139.935 C 154.435 142.739, 146.163 148.113, 139.895 151.876 C 133.542 155.692, 127.954 159.776, 127.265 161.109 C 125.910 163.731, 125.576 174.785, 126.794 176.701 C 127.354 177.582, 130.078 176.891, 137.028 174.105 C 152.068 168.078, 159.527 166.615, 175 166.657 C 184.556 166.684, 190.399 167.202, 195 168.431 C 202.803 170.516, 215.494 175.621, 219.113 178.130 C 220.550 179.126, 222.012 179.654, 222.363 179.304 C 222.713 178.953, 223 175.146, 223 170.844 L 223 163.020 217.750 159.638 C 214.863 157.777, 205.338 151.619, 196.585 145.953 C 177.180 133.392, 173.042 131.696, 167.383 133.982 M 57.405 163.104 C 55.592 165.107, 55.486 167.693, 55.207 216.671 L 54.915 268.134 57.316 273.317 C 60.087 279.295, 63.018 282.660, 68.772 286.468 C 74.468 290.237, 88.428 291.361, 120.910 290.667 C 143.689 290.180, 146.505 289.936, 148.097 288.312 C 151.135 285.214, 151.353 281.820, 148.763 277.975 L 146.421 274.500 112.524 274.236 C 75.192 273.946, 76.838 274.228, 73.148 267.502 C 71.700 264.865, 71.439 258.462, 71 214.854 C 70.526 167.824, 70.400 165.097, 68.595 163.104 C 66.005 160.244, 59.995 160.244, 57.405 163.104 M 162.430 175.982 C 151.005 177.595, 136.065 182.969, 128.979 188.015 L 126 190.136 126 214.433 C 126 237.947, 126.071 238.820, 128.198 241.525 L 130.397 244.320 174.275 243.654 C 200.435 243.257, 218.913 242.582, 220.034 241.982 C 222.777 240.514, 223.116 236.890, 222.792 212.500 L 222.500 190.500 211.495 184.958 C 195.640 176.974, 178.116 173.768, 162.430 175.982 M 155.846 190.973 C 142.756 194.843, 131 201.257, 131 204.528 C 131 205.312, 132.118 206.686, 133.484 207.581 C 135.859 209.138, 136.261 209.058, 142.734 205.739 C 154.936 199.483, 159.114 198.500, 173.500 198.500 C 187.974 198.500, 192.783 199.634, 203.662 205.613 C 207.052 207.476, 210.529 209, 211.389 209 C 213.386 209, 216.220 204.736, 215.489 202.832 C 214.595 200.501, 205.150 195.329, 196.500 192.432 C 185.415 188.721, 165.839 188.018, 155.846 190.973 M 163.248 211.814 C 157.221 213.971, 154 216.516, 154 219.120 C 154 222.493, 157.401 223.207, 162.983 221.007 C 169.612 218.394, 178.377 218.391, 185.239 220.999 C 191.556 223.400, 193.351 223.487, 195.025 221.470 C 200.753 214.569, 176.305 207.139, 163.248 211.814" stroke="none" fill="#FFFFF" fill-rule="evenodd"/>
+        </svg>
+    </div>
+    <span class="site-title">
+        Smart'n Healthy House
+        <span class="beta-badge">Beta</span>
+    </span>
+    </div>
+    <h1>Buscando tu Dispositivo</h1>
+    <div class="animation-container">
+        <svg class="bluetooth-icon" viewBox="0 0 320 512">
+            <path d="M196.5 260l92.6-103.3L143.1 0v206.3l-86.1-86.1-31.4 31.4 108.1 108.4L25.6 368.4l31.4 31.4 86.1-86.1L145.8 512l148.6-148.6-97.9-103.3zm40.9-103l-50 50-.3-100.3 50.3 50.3zM187.4 313l50 50-50.3 50.3 .3-100.3z"/>
+        </svg>
+     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512" class="error-icon"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"/></svg>
+     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="success-icon">
+        <path d="M470.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L192 338.7 425.4 105.4c12.5-12.5 32.8-12.5 45.3 0z" fill="#4CAF50"/>
+     </svg>
+        <div class="pulse-ring"></div>
+    </div>
+    <p class="status-text">Buscando dispositivos Smart'n Healthy...</p>
+    <button id="searchButton" class="search-button">Buscar Dispositivo</button>
+
+    <script>
+        let connectionAttempts = 0;
+        const MAX_ATTEMPTS = 3;
+        const RETRY_DELAY = 5000;
+        const INITIAL_DELAY = 3000;
+
+        async function connectToDevice(device) {
+            try {
+                const server = await device.gatt.connect();
+                const service = await server.getPrimaryService('generic_access');
+                const characteristic = await service.getCharacteristic('gap.device_name');
+                
+                document.querySelector('.pulse-ring').classList.add('success-animation');
+                document.querySelector('.status-text').textContent = '¡Conectado exitosamente!';
+                
+                // Setup device monitoring
+                device.addEventListener('gattserverdisconnected', handleDisconnection);
+                return true;
+            } catch (error) {
+                console.error('Connection error:', error);
+                return false;
+            }
+        }
+
+        function handleDisconnection() {
+            showError('Dispositivo desconectado. Intentando reconectar...');
+            retryConnection();
+        }
+
+        async function checkBluetoothAvailability() {
+            if (!navigator.bluetooth) {
+                throw new Error('Tu navegador no es compatible con Bluetooth. Te recomendamos usar Chrome o Edge para conectar tu dispositivo.');
+            }
+
+            try {
+                await navigator.bluetooth.getAvailability();
+            } catch (error) {
+                throw new Error('Por favor, asegúrate de que el Bluetooth de tu dispositivo está activado.');
+            }
+        }
+
+        async function searchBluetoothDevice() {
+            try {
+                await checkBluetoothAvailability();
+                
+                document.querySelector('.status-text').textContent = 'Buscando dispositivos cercanos...';
+                document.querySelector('.bluetooth-icon').style.display = 'block';
+                document.querySelector('.error-icon').classList.remove('visible');
+                
+                const device = await navigator.bluetooth.requestDevice({
+                    filters: [{
+                        namePrefix: 'Smart{n}device'
+                    }],
+                    optionalServices: ['generic_access']
+                });
+
+                if (device.name && device.name.includes('Smart{n}device')) {
+                    document.querySelector('.status-text').textContent = 'Dispositivo encontrado. Conectando...';
+                    const connected = await connectToDevice(device);
+                    
+                    if (!connected) {
+                        throw new Error('Failed to connect');
+                    }
+                    return true;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                let errorMessage = 'No se pudo conectar al dispositivo.';
+                
+                if (error.message.includes('globally disabled')) {
+                    errorMessage = 'El Bluetooth está desactivado. Por favor actívalo en la configuración de tu dispositivo.';
+                } else if (error.message.includes('User cancelled')) {
+                    errorMessage = 'Búsqueda cancelada. Intenta de nuevo cuando estés listo.';
+                } else if (error.message.includes('Device not found')) {
+                    errorMessage = 'No encontramos ningún dispositivo Smart\'n Healthy cercano. Asegúrate de que está encendido y cerca.';
+                }
+                
+                showError(errorMessage);
+                return false;
+            }
+        }
+
+        function showError(message) {
+            document.querySelector('.bluetooth-icon').style.display = 'none';
+            document.querySelector('.error-icon').classList.add('visible');
+            document.querySelector('.pulse-ring').classList.add('error-animation');
+            document.querySelector('.status-text').textContent = message;
+        }
+
+        function showErrorDetails() {
+            const errorList = document.createElement('ul');
+            errorList.style.textAlign = 'left';
+            errorList.style.margin = '1rem auto';
+            errorList.style.maxWidth = '300px';
+            errorList.innerHTML = `
+                <li>El dispositivo está encendido</li>
+                <li>Está dentro del rango de alcance (10 metros)</li>
+                <li>El Bluetooth de su dispositivo está activado</li>
+                <li>No hay otros dispositivos conectados</li>
+            `;
+            document.querySelector('.status-text').appendChild(errorList);
+        }
+
+        function showRetrying() {
+            connectionAttempts++;
+            const remainingAttempts = MAX_ATTEMPTS - connectionAttempts;
+            document.querySelector('.status-text').textContent = 
+                `Reintentando conectar... (${remainingAttempts} intentos restantes)`;
+            
+            setTimeout(async () => {
+                await searchBluetoothDevice();
+            }, RETRY_DELAY);
+        }
+
+        function simulateSuccessfulConnection() {
+            // Limpiar cualquier estado de error previo
+            document.querySelector('.pulse-ring').classList.remove('error-animation');
+            document.querySelector('.error-icon').classList.remove('visible');
+            
+            // Simular búsqueda inicial
+            document.querySelector('.status-text').textContent = 'Buscando dispositivos cercanos...';
+            
+            setTimeout(() => {
+                // Mostrar mensaje de dispositivo encontrado
+                document.querySelector('.status-text').textContent = 'Dispositivo encontrado. Conectando...';
+                // Ocultar icono bluetooth y mostrar icono de éxito
+                document.querySelector('.bluetooth-icon').style.display = 'none';
+                document.querySelector('.success-icon').classList.add('visible');
+                
+                setTimeout(() => {
+                    // Agregar animación de éxito al anillo
+                    document.querySelector('.pulse-ring').classList.add('success-animation');
+                    document.querySelector('.status-text').textContent = '¡Conectado exitosamente!';
+                    
+                    // Redireccionar después de mostrar el éxito
+                    setTimeout(() => {
+                        window.location.href = './wifi/index.html';
+                    }, 2000);
+                }, 1500);
+            }, 1000);
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const searchButton = document.getElementById('searchButton');
+            
+            if (navigator.brave !== undefined || /brave/i.test(navigator.userAgent)) {
+                document.body.classList.add('brave');
+                searchButton.addEventListener('click', async () => {
+                    searchButton.disabled = true;
+                    try {
+                        await searchBluetoothDevice();
+                    } catch (error) {
+                        showError('No pudimos conectar con tu dispositivo. Por favor, inténtalo de nuevo.');
+                    } finally {
+                        searchButton.disabled = false;
+                    }
+                });
+            } else {
+                try {
+                    await checkBluetoothAvailability();
+                    setTimeout(async () => {
+                        try {
+                            await searchBluetoothDevice();
+                        } catch (error) {
+                            showError('No pudimos conectar con tu dispositivo. Por favor, inténtalo de nuevo.');
+                        }
+                    }, INITIAL_DELAY);
+                } catch (error) {
+                    showError(error.message);
+                }
+            }
+        });
+
+        document.addEventListener('keydown', (event) => {
+            // Detectar Ctrl+X
+            if (event.ctrlKey && event.key.toLowerCase() === 'x') {
+                event.preventDefault(); // Prevenir el comportamiento por defecto
+                simulateSuccessfulConnection();
+            }
+        });
+
+        const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+        if (mediaQuery.matches) {
+            document.querySelector('.bluetooth-icon').style.animation = 'none';
+            document.querySelector('.pulse-ring').style.animation = 'none';
+            document.querySelector('.status-text').style.animation = 'none';
+        }
+    </script>
+</body>
+</html>

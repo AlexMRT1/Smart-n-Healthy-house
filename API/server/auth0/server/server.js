@@ -1,12 +1,19 @@
 require("dotenv").config();
 const express = require("express");
+const cors = require("cors");
 const bcrypt = require("bcrypt");
 const db = require("./firebase");
 
 const app = express();
-app.use(express.json());
 
-// Servir archivos estáticos
+// CORS configuration
+app.use(cors({
+  origin: ['http://127.0.0.1:5500', 'http://localhost:3000'],
+  methods: ['GET', 'POST'],
+  credentials: true
+}));
+
+app.use(express.json());
 app.use(express.static('sign-in'));
 
 const USERS_DOC_ID = "GuJNZZyq5M5QW6aAq8Rv";
@@ -26,31 +33,16 @@ const validatePassword = (password) => {
 
 app.post("/register", async (req, res) => {
   try {
-    const { email, password, nombre } = req.body;
+    const { email, password, nombre, uid } = req.body;
 
     // Validaciones
-    if (!email || !password || !nombre) {
+    if (!email || !password || !nombre || !uid) {
       return res.status(400).json({ 
-        message: "Email, contraseña y nombre son requeridos" 
+        message: "Todos los campos son requeridos" 
       });
     }
 
-    // Validar formato de email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({ 
-        message: "Formato de email inválido" 
-      });
-    }
-
-    // Validar contraseña
-    if (!validatePassword(password)) {
-      return res.status(400).json({ 
-        message: "La contraseña no cumple con los requisitos de seguridad" 
-      });
-    }
-
-    // Verificar si el email ya existe
+    // Verificar si el email ya existe en la colección Users
     const usersRef = db.collection("Users");
     const snapshot = await usersRef.where("Email", "==", email).get();
     
@@ -61,26 +53,101 @@ app.post("/register", async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const userId = usersRef.doc().id;
 
-    await usersRef.doc(USERS_DOC_ID).set({
+    // Crear documento con el UID como nombre en la colección Users
+    await usersRef.doc(uid).set({
       Email: email,
-      ID: userId,
       Password: hashedPassword,
-      Nombre: nombre
+      Nombre: nombre,
+      IsAdmin: true,
+      IsDeveloper: false,
+      Device: "",
+      DeviceSN: "",
+      Sensors: [],
+      battery: "",
+      UserImg: "",
+      createdAt: new Date().toISOString()
     });
 
     res.status(201).json({ 
       message: "Usuario registrado correctamente", 
-      id: userId 
+      id: uid 
+    });
+
+  } catch (err) {
+    console.error('Error en registro:', err);
+    res.status(500).json({ 
+      message: err.message || "Error al registrar usuario" 
+    });
+  }
+});
+
+// Add social login handler
+app.post("/social-auth", async (req, res) => {
+  try {
+    const { uid, email, nombre, photoURL } = req.body;
+    const usersRef = db.collection("Users");
+
+    // Check if user exists
+    const userDoc = await usersRef.doc(uid).get();
+
+    if (!userDoc.exists) {
+      // Create new user document
+      await usersRef.doc(uid).set({
+        Email: email,
+        Nombre: nombre,
+        IsAdmin: true,
+        IsDeveloper: false,
+        Device: "",
+        DeviceSN: "",
+        Sensors: [],
+        battery: "",
+        UserImg: photoURL || "",
+        createdAt: new Date().toISOString()
+      });
+    }
+
+    res.status(200).json({ 
+      message: "Login exitoso", 
+      id: uid 
     });
 
   } catch (err) {
     console.error(err);
     res.status(500).json({ 
-      message: "Error al registrar usuario" 
+      message: "Error en autenticación" 
     });
   }
+});
+
+// Agregar este nuevo endpoint
+app.get("/verify-user/:uid", async (req, res) => {
+  try {
+    const { uid } = req.params;
+    const userDoc = await db.collection("Users").doc(uid).get();
+    
+    res.json({ 
+      exists: userDoc.exists 
+    });
+    
+  } catch (error) {
+    console.error('Error verificando usuario:', error);
+    res.status(500).json({ 
+      message: "Error verificando usuario",
+      exists: false
+    });
+  }
+});
+
+app.get('/config', (req, res) => {
+  res.json({
+    apiKey: process.env.FIREBASE_API_KEY,
+    authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+    appId: process.env.FIREBASE_APP_ID
+  });
 });
 
 const PORT = process.env.PORT || 3000;

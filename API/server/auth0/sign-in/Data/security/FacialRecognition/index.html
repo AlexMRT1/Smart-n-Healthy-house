@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facial Recognition</title>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(to bottom, #f5f7fa, #e4e8ec);
+        }
+
+        .circle {
+            width: 700px;
+            height: 700px;
+            background-color: #000000;
+            border-radius: 50%;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #video {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1); /* Mirror the video */
+        }
+
+        .instruction-text {
+            font-family: "Quicksand", sans-serif;
+            font-size: 1.2rem;
+            color: #666;
+            margin-top: 20px;
+        }
+
+        .skip-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: transparent;
+            color: #666;
+            border: 2px solid #666;
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: "Quicksand", sans-serif;
+            z-index: 1000;
+        }
+
+        .skip-button:hover {
+            background: #666;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .info-link {
+            font-family: "Quicksand", sans-serif;
+            font-size: 0.9rem;
+            color: #4A90E2;
+            text-decoration: none;
+            margin-top: 10px;
+            transition: color 0.2s ease;
+        }
+
+        .info-link:hover {
+            color: #357abd;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="circle">
+        <video id="video" autoplay playsinline></video>
+    </div>
+    <div class="instruction-text">Mueve tu cabeza lentamente en círculos</div>
+    <a href="#" class="info-link">¿Para qué usamos tu rostro?</a>
+    <button class="skip-button" onclick="window.location.href = '/WWW/Dashboard/Index.html'">Omitir</button>
+
+    <script>
+        async function initCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 },
+                        facingMode: "user"
+                    }
+                });
+                const videoElement = document.getElementById('video');
+                videoElement.srcObject = stream;
+            } catch (err) {
+                console.error("Error accessing camera:", err);
+                alert("No se pudo acceder a la cámara. Por favor, asegúrate de dar permiso para usar la cámara.");
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', initCamera);
+    </script>
+</body>
+</html>

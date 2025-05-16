@@ -3,96 +3,251 @@ import {
   getAuth, 
   createUserWithEmailAndPassword,
   GoogleAuthProvider,
-  signInWithPopup 
+  OAuthProvider,
+  signInWithPopup,
+  updateProfile 
 } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js';
 
-const firebaseConfig = {
-  apiKey: "AIzaSyA8OuZidC17oS9ZsesopN0S78m_DrmVhTo",
-  authDomain: "prueba-1e1a3.firebaseapp.com",
-  projectId: "prueba-1e1a3",
-  storageBucket: "prueba-1e1a3.appspot.com",
-  messagingSenderId: "824486865843",
-  appId: "1:824486865843:web:0b2b9b0b0b0b0b0b0b0b0b"
-};
+import { setCookie, getCookie, deleteCookie } from './utils/cookies.js';
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const googleProvider = new GoogleAuthProvider();
+let app;
+let auth;
+let googleProvider;
+let appleProvider;
 
-auth.onAuthStateChanged((user) => {
-  if (user) {
-    console.log('User is signed in');
-  } else {
-    console.log('No user is signed in');
+export async function initializeFirebase(config) {
+  app = initializeApp(config);
+  auth = getAuth(app);
+  googleProvider = new GoogleAuthProvider();
+  appleProvider = new OAuthProvider('apple.com');
+  
+  // Verificar si hay una sesión activa al inicializar
+  const userUID = getCookie('userUID');
+  if (userUID) {
+    try {
+      // Verificar si el UID existe en el backend
+      const response = await fetch(`http://localhost:3000/verify-user/${userUID}`);
+      const data = await response.json();
+      
+      if (!data.exists) {
+        // Si el usuario no existe, borrar todas las cookies
+        deleteCookie('userUID');
+        deleteCookie('userEmail');
+        deleteCookie('userName');
+        window.location.href = '/API/server/auth0/sign-in/index.html';
+        return;
+      }
+      
+      // Si el usuario existe, redirigir al dashboard
+      window.location.href = '/WWW/Dashboard/Index.html';
+      return;
+    } catch (error) {
+      console.error('Error verificando usuario:', error);
+      // En caso de error, borrar cookies por seguridad
+      deleteCookie('userUID');
+      deleteCookie('userEmail');
+      deleteCookie('userName');
+      window.location.href = '/API/server/auth0/sign-in/index.html';
+      return;
+    }
   }
-});
 
-export async function registerUser(email, password, nombre) {
+  auth.onAuthStateChanged((user) => {
+    if (user) {
+      showToast('¡Bienvenido!', 'success');
+    } else {
+      console.log('No user is signed in');
+    }
+  });
+}
+
+function showToast(message, type = 'info') {
+  const icons = {
+    success: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M20 6L9 17L4 12"></path>
+    </svg>`,
+    error: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="15" y1="9" x2="9" y2="15"></line>
+      <line x1="9" y1="9" x2="15" y2="15"></line>
+    </svg>`,
+    info: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="12" y1="16" x2="12" y2="12"></line>
+      <line x1="12" y1="8" x2="12" y2="8"></line>
+    </svg>`,
+    warning: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+      <line x1="12" y1="9" x2="12" y2="13"></line>
+      <line x1="12" y1="17" x2="12" y2="17"></line>
+    </svg>`
+  };
+
+  window.Toastify({
+    text: `<span style="display: flex; align-items: center; gap: 8px;">
+      <span style="color: white;">${icons[type]}</span>
+      <span>${message}</span>
+    </span>`,
+    duration: 3000,
+    gravity: "top",
+    position: "right",
+    escapeMarkup: false,
+    style: {
+      background: type === 'success' ? '#48bb78' : 
+                 type === 'error' ? '#f56565' : 
+                 type === 'warning' ? '#ed8936' : '#4299e1',
+      borderRadius: '8px',
+      boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+      display: 'flex',
+      alignItems: 'center',
+      padding: '12px 16px'
+    }
+  }).showToast();
+}
+
+function saveUserSession(user) {
   try {
-    // Validate input
-    if (!email || !password || !nombre) {
-      throw new Error('Todos los campos son requeridos');
+    if (!user) {
+      console.error('No user provided to saveUserSession');
+      return;
     }
 
+    // Set each cookie individually
+    setCookie('userUID', user.uid);
+    setCookie('userEmail', user.email);
+    setCookie('userName', user.displayName || '');
+
+    // Verify cookies were set
+    console.log('Cookies after setting:');
+    console.log('UID:', getCookie('userUID'));
+    console.log('Email:', getCookie('userEmail'));
+    console.log('Name:', getCookie('userName'));
+
+    // Only redirect if cookies are set
+    if (getCookie('userUID')) {
+      window.location.href = './Data/index.html';
+    } else {
+      showToast('Error guardando la sesión', 'error');
+    }
+  } catch (error) {
+    console.error('Error in saveUserSession:', error);
+    showToast('Error guardando la sesión', 'error');
+  }
+}
+
+export async function registerUser(email, password, nombre, event) {
+  if (event) event.preventDefault();
+  
+  try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
-    // Add display name
-    await user.updateProfile({
+    // Update profile first
+    await updateProfile(user, { 
       displayName: nombre
     });
 
-    return {
-      success: true,
-      user: {
-        uid: user.uid,
-        email: user.email,
-        nombre: nombre
-      }
-    };
+    // Refresh user to get updated profile
+    await user.reload();
+    const updatedUser = auth.currentUser;
+
+    const response = await fetch('http://localhost:3000/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email,
+        password,
+        nombre,
+        uid: updatedUser.uid
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Error en el registro del backend');
+    }
+
+    showToast('¡Registro exitoso!', 'success');
+    saveUserSession(updatedUser);
+    
+    return { success: true, user: updatedUser };
 
   } catch (error) {
     console.error('Registration error:', error);
-    
-    let errorMessage;
-    switch (error.code) {
-      case 'auth/email-already-in-use':
-        errorMessage = 'Este correo electrónico ya está registrado';
-        break;
-      case 'auth/invalid-email':
-        errorMessage = 'El correo electrónico no es válido';
-        break;
-      case 'auth/operation-not-allowed':
-        errorMessage = 'El registro con correo electrónico no está habilitado';
-        break;
-      case 'auth/weak-password':
-        errorMessage = 'La contraseña es demasiado débil';
-        break;
-      case 'auth/api-key-not-valid':
-        errorMessage = 'Error de configuración. Por favor contacta al soporte.';
-        break;
-      default:
-        errorMessage = 'Error en el registro. Por favor intenta nuevamente';
-    }
-    
-    throw new Error(errorMessage);
+    showToast(getErrorMessage(error), 'error');
+    throw error;
   }
 }
 
 export async function signInWithGoogle() {
   try {
     const result = await signInWithPopup(auth, googleProvider);
-    return {
-      success: true,
-      user: result.user
-    };
+    
+    const response = await fetch('http://localhost:3000/social-auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        uid: result.user.uid,
+        email: result.user.email,
+        nombre: result.user.displayName,
+        photoURL: result.user.photoURL
+      })
+    });
+
+    if (!response.ok) throw new Error('Error en la autenticación');
+
+    showToast('¡Bienvenido!', 'success');
+    saveUserSession(result.user); // Save user session
+    return { success: true, user: result.user };
+
   } catch (error) {
     console.error('Google sign in error:', error);
-    throw new Error('Error al iniciar sesión con Google');
+    showToast('Error al iniciar sesión con Google', 'error');
+    throw error;
   }
 }
 
 export async function signInWithApple() {
-  throw new Error('El inicio de sesión con Apple estará disponible próximamente');
+  try {
+    const result = await signInWithPopup(auth, appleProvider);
+    
+    const response = await fetch('http://localhost:3000/social-auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        uid: result.user.uid,
+        email: result.user.email,
+        nombre: result.user.displayName,
+        photoURL: result.user.photoURL
+      })
+    });
+
+    if (!response.ok) throw new Error('Error en la autenticación');
+
+    showToast('¡Bienvenido!', 'success');
+    saveUserSession(result.user); // Save user session
+    return { success: true, user: result.user };
+
+  } catch (error) {
+    console.error('Apple sign in error:', error);
+    showToast('Error al iniciar sesión con Apple', 'error');
+    throw error;
+  }
+}
+
+function getErrorMessage(error) {
+  switch (error.code) {
+    case 'auth/email-already-in-use':
+      return 'Este correo electrónico ya está registrado';
+    case 'auth/invalid-email':
+      return 'El correo electrónico no es válido';
+    case 'auth/operation-not-allowed':
+      return 'Operación no permitida';
+    case 'auth/weak-password':
+      return 'La contraseña es demasiado débil';
+    case 'auth/network-request-failed':
+      return 'Error de conexión. Verifica tu internet';
+    default:
+      return error.message || 'Error en el registro. Por favor intenta nuevamente';
+  }
 }
