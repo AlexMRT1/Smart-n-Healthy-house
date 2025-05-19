@@ -94,6 +94,23 @@ const io = socketIo(server, {
     transports: ['websocket', 'polling']
 });
 
+// Socket.IO connection monitoring
+io.on('connect_error', (error) => {
+    console.error('Socket.IO connection error:', error);
+});
+
+io.on('connect_timeout', () => {
+    console.error('Socket.IO connection timeout');
+});
+
+io.on('reconnect', (attemptNumber) => {
+    console.log(`Socket.IO reconnected after ${attemptNumber} attempts`);
+});
+
+io.on('reconnect_attempt', () => {
+    console.log('Socket.IO attempting to reconnect...');
+});
+
 // Variables globales
 let sensorData = {
     temperatura: null,
@@ -272,6 +289,27 @@ client.on('connect', () => {
     console.log('👂 Listening for sensor data...\n');
 });
 
+// Enhanced MQTT error handling
+client.on('disconnect', () => {
+    console.log('MQTT client disconnected');
+});
+
+client.on('reconnect', () => {
+    console.log('MQTT client reconnecting...');
+});
+
+client.on('close', () => {
+    console.log('MQTT connection closed');
+});
+
+client.on('offline', () => {
+    console.log('MQTT client is offline');
+});
+
+client.on('error', (error) => {
+    console.error('MQTT error:', error);
+});
+
 // Modificar el handler de MQTT para mensajes de incidentes
 client.on('message', (topic, message) => {
     if (topic === '/report-incident') {
@@ -419,8 +457,95 @@ function scheduleCleanup() {
 // Iniciar el programador de limpieza
 scheduleCleanup();
 
-// Start server
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
+// Graceful shutdown handling
+let isShuttingDown = false;
+
+function gracefulShutdown(signal) {
+    console.log(`\n${signal} received. Starting graceful shutdown...`);
+    
+    if (isShuttingDown) {
+        console.log('Shutdown already in progress...');
+        return;
+    }
+    
+    isShuttingDown = true;
+
+    // Close MQTT connection
+    console.log('Closing MQTT connection...');
+    client.end(false, () => {
+        console.log('MQTT connection closed.');
+    });
+
+    // Close all socket connections
+    console.log('Closing Socket.IO connections...');
+    io.close(() => {
+        console.log('Socket.IO connections closed.');
+    });
+
+    // Close HTTP server
+    server.close(() => {
+        console.log('HTTP server closed.');
+        process.exit(0);
+    });
+
+    // Force close after 10 seconds
+    setTimeout(() => {
+        console.log('Could not close connections in time, forcefully shutting down');
+        process.exit(1);
+    }, 10000);
+}
+
+// Handle different shutdown signals
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+process.on('uncaughtException', (error) => {
+    console.error('Uncaught Exception:', error);
+    gracefulShutdown('uncaughtException');
 });
+
+// Add connection status monitoring
+let serverStatus = {
+    isConnected: false,
+    lastConnection: null,
+    connectionAttempts: 0,
+    maxRetries: 5,
+    retryTimeout: 5000
+};
+
+function startServer() {
+    try {
+        server.listen(PORT, () => {
+            console.log(`\n=== Server Status ===`);
+            console.log(`🚀 Server running on port ${PORT}`);
+            serverStatus.isConnected = true;
+            serverStatus.lastConnection = new Date();
+            serverStatus.connectionAttempts = 0;
+        });
+
+        server.on('error', (error) => {
+            console.error('Server error:', error);
+            if (!serverStatus.isConnected && serverStatus.connectionAttempts < serverStatus.maxRetries) {
+                serverStatus.connectionAttempts++;
+                console.log(`Retrying connection (${serverStatus.connectionAttempts}/${serverStatus.maxRetries})...`);
+                setTimeout(startServer, serverStatus.retryTimeout);
+            } else {
+                console.error('Max retries reached or server error while connected');
+                gracefulShutdown('SERVER_ERROR');
+            }
+        });
+
+    } catch (error) {
+        console.error('Error starting server:', error);
+        if (serverStatus.connectionAttempts < serverStatus.maxRetries) {
+            serverStatus.connectionAttempts++;
+            console.log(`Retrying connection (${serverStatus.connectionAttempts}/${serverStatus.maxRetries})...`);
+            setTimeout(startServer, serverStatus.retryTimeout);
+        } else {
+            console.error('Max retries reached');
+            process.exit(1);
+        }
+    }
+}
+
+// Start server with connection monitoring
+startServer();

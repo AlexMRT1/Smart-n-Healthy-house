@@ -3,6 +3,8 @@ const express = require("express");
 const cors = require("cors");
 const bcrypt = require("bcrypt");
 const db = require("./firebase");
+const { Storage } = require('@google-cloud/storage');
+const path = require('path');
 
 const app = express();
 
@@ -63,9 +65,10 @@ app.post("/register", async (req, res) => {
       IsDeveloper: false,
       Device: "",
       DeviceSN: "",
-      Sensors: [],
-      battery: "",
-      UserImg: "",
+      Sensors: ['battery: ""','Fire: ""','water_level: ""','cam:"active"','gas: ""'],
+      UserImg: "", // Aquí se guardará la imagen facial
+      faceData: null, // Aquí se guardarán los datos del reconocimiento facial
+      lastFaceUpdate: null,
       createdAt: new Date().toISOString()
     });
 
@@ -137,6 +140,49 @@ app.get("/verify-user/:uid", async (req, res) => {
       exists: false
     });
   }
+});
+
+app.post("/save-face-data", async (req, res) => {
+    try {
+        const { uid, faceImage, faceData } = req.body;
+        
+        if (!uid || !faceImage) {
+            return res.status(400).json({
+                success: false,
+                message: "Datos incompletos"
+            });
+        }
+
+        // Obtener referencia al documento del usuario
+        const userRef = db.collection("Users").doc(uid);
+        const userDoc = await userRef.get();
+
+        if (!userDoc.exists) {
+            return res.status(404).json({
+                success: false,
+                message: "Usuario no encontrado"
+            });
+        }
+
+        // Guardar imagen en base64 en el documento del usuario
+        await userRef.update({
+            UserImg: faceImage,
+            faceData: faceData,
+            lastFaceUpdate: new Date().toISOString()
+        });
+
+        res.json({
+            success: true,
+            message: "Datos faciales guardados correctamente"
+        });
+
+    } catch (error) {
+        console.error('Error guardando datos faciales:', error);
+        res.status(500).json({
+            success: false,
+            message: "Error al guardar datos faciales"
+        });
+    }
 });
 
 app.get('/config', (req, res) => {

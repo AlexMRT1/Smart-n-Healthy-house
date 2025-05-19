@@ -4,6 +4,50 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Facial Recognition</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.11.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface@0.0.7"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/dist/face-api.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-firestore.js"></script>
+    <script type="module">
+        import { getCookie } from '../../../utils/cookies.js';
+        
+        // Expose checkSession to window object
+        window.checkSession = async function() {
+            try {
+                const uid = getCookie('uid');
+                console.log('UID from cookie:', uid);
+                
+                if (!uid) {
+                    console.log('No UID found, redirecting to login');
+                    window.location.href = '../../../index.html';
+                    return false;
+                }
+
+                const response = await fetch(`http://localhost:3000/verify-user/${uid}`);
+                const data = await response.json();
+                console.log('User verification response:', data);
+
+                if (!data.exists) {
+                    console.log('User not found in database');
+                    window.location.href = '../../../index.html';
+                    return false;
+                }
+
+                window.uid = uid;
+                return true;
+            } catch (error) {
+                console.error('Session check error:', error);
+                window.showErrorToast?.("Error al verificar la sesión");
+                return false;
+            }
+        };
+
+        // Also expose getCookie for use in other scripts
+        window.getCookie = getCookie;
+    </script>
     <style>
         body {
             margin: 0;
@@ -34,11 +78,52 @@
             transform: scaleX(-1); /* Mirror the video */
         }
 
+        #face-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .progress-ring {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 720px;
+            height: 720px;
+            pointer-events: none;
+        }
+
+        .progress-circle {
+            fill: none;
+            stroke: #4CAF50;
+            stroke-width: 4;
+            stroke-linecap: round;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+            stroke-dasharray: 2237.39; /* This is 2 * PI * 356 (the radius) */
+            stroke-dashoffset: 2237.39; /* Same as dasharray to start empty */
+            transition: stroke-dashoffset 0.3s ease;
+        }
+
+        @keyframes blink {
+            0% { color: #666; }
+            50% { color: #ff4444; }
+            100% { color: #666; }
+        }
+
         .instruction-text {
             font-family: "Quicksand", sans-serif;
             font-size: 1.2rem;
             color: #666;
             margin-top: 20px;
+            transition: color 0.3s ease;
+        }
+
+        .instruction-text.warning {
+            animation: blink 1s infinite;
         }
 
         .skip-button {
@@ -76,17 +161,108 @@
             color: #357abd;
             text-decoration: underline;
         }
+
+        .toast-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .loading.visible {
+            opacity: 1;
+            pointer-events: all;
+        }
     </style>
 </head>
 <body>
     <div class="circle">
         <video id="video" autoplay playsinline></video>
+        <canvas id="face-canvas"></canvas>
+        <svg class="progress-ring">
+            <circle class="progress-circle" cx="360" cy="360" r="356"/>
+        </svg>
     </div>
     <div class="instruction-text">Mueve tu cabeza lentamente en círculos</div>
     <a href="#" class="info-link">¿Para qué usamos tu rostro?</a>
     <button class="skip-button" onclick="window.location.href = '/WWW/Dashboard/Index.html'">Omitir</button>
+    <div class="loading">
+        <div class="instruction-text">Procesando reconocimiento facial...</div>
+    </div>
 
     <script>
+        async function waitForFaceAPI() {
+            return new Promise((resolve) => {
+                if (window.faceapi) {
+                    resolve();
+                } else {
+                    window.addEventListener('face-api-loaded', resolve);
+                }
+            });
+        }
+
+        async function init() {
+            try {
+                // Make sure window.checkSession exists
+                if (typeof window.checkSession !== 'function') {
+                    throw new Error('Session check function not available');
+                }
+
+                const sessionValid = await window.checkSession();
+                console.log('Session validation result:', sessionValid);
+                
+                if (!sessionValid) {
+                    console.log('Session invalid, stopping initialization');
+                    return;
+                }
+
+                await waitForFaceAPI();
+                await loadModels();
+                await initCamera();
+            } catch (error) {
+                console.error('Initialization error:', error);
+                showErrorToast("Error al inicializar el reconocimiento facial");
+            }
+        }
+
+        let faceDetected = false;
+        let progressPoints = [];
+        const totalPoints = 36; // Points needed for a complete circle
+        const angleThreshold = 10; // Degrees
+        let lastMovementTime = Date.now();
+        const movementTimeout = 2000; // 2 seconds without movement triggers warning
+        const instructionText = document.querySelector('.instruction-text');
+
+        async function loadModels() {
+            const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models';
+            try {
+                await Promise.all([
+                    faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+                    faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL)
+                ]);
+                console.log('Models loaded successfully');
+            } catch (error) {
+                console.error('Error loading models:', error);
+                showErrorToast("Error al cargar los modelos de reconocimiento facial");
+            }
+        }
+
         async function initCamera() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({
@@ -98,13 +274,240 @@
                 });
                 const videoElement = document.getElementById('video');
                 videoElement.srcObject = stream;
+
+                // Wait for video to be ready
+                await new Promise((resolve) => {
+                    videoElement.onloadedmetadata = () => {
+                        resolve();
+                    };
+                });
+
+                try {
+                    await loadModels();
+                    detectFace();
+                } catch (modelError) {
+                    showErrorToast("Error al cargar los modelos de reconocimiento facial. Recargue la página.");
+                }
             } catch (err) {
-                console.error("Error accessing camera:", err);
-                alert("No se pudo acceder a la cámara. Por favor, asegúrate de dar permiso para usar la cámara.");
+                if (err.name === 'NotAllowedError') {
+                    showErrorToast("No se pudo acceder a la cámara. Por favor, asegúrate de dar permiso para usar la cámara.");
+                } else if (err.name === 'NotFoundError') {
+                    showErrorToast("No se encontró ninguna cámara en tu dispositivo.");
+                } else {
+                    showErrorToast("Ocurrió un error al iniciar la cámara: " + err.message);
+                }
             }
         }
 
-        document.addEventListener('DOMContentLoaded', initCamera);
+        async function detectFace() {
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('face-canvas');
+            
+            // Wait for video dimensions to be set
+            await new Promise(resolve => {
+                if (video.readyState === 4) {
+                    resolve();
+                } else {
+                    video.addEventListener('loadeddata', resolve);
+                }
+            });
+
+            const displaySize = { width: video.videoWidth, height: video.videoHeight };
+            faceapi.matchDimensions(canvas, displaySize);
+
+            const detectFaces = async () => {
+                try {
+                    const detections = await faceapi.detectSingleFace(
+                        video,
+                        new faceapi.TinyFaceDetectorOptions()
+                    ).withFaceLandmarks();
+
+                    if (detections) {
+                        const resizedDetections = faceapi.resizeResults(detections, displaySize);
+                        const nose = resizedDetections.landmarks.getNose()[0];
+                        trackMovement(nose);
+                        updateProgressRing();
+                    }
+                    
+                    requestAnimationFrame(detectFaces);
+                } catch (error) {
+                    console.error('Face detection error:', error);
+                    showErrorToast("Error en la detección facial. Recargue la página.");
+                }
+            };
+
+            detectFaces();
+        }
+
+        async function saveFaceData(faceData) {
+            try {
+                const video = document.getElementById('video');
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(video, 0, 0);
+                
+                // Convertir a base64
+                const imageBase64 = canvas.toDataURL('image/jpeg');
+                
+                const uid = getCookie('uid');
+                if (!uid) {
+                    throw new Error('No se encontró ID de usuario');
+                }
+
+                const response = await fetch('http://localhost:3000/save-face-data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        uid: uid,
+                        faceImage: imageBase64,
+                        faceData: faceData
+                    })
+                });
+
+                if (!response.ok) throw new Error('Error al guardar datos faciales');
+                
+                const result = await response.json();
+                if (result.success) {
+                    showSuccessToast('Reconocimiento facial guardado');
+                    setTimeout(() => {
+                        window.location.href = '/WWW/Dashboard/Index.html';
+                    }, 1500);
+                    return true;
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (error) {
+                console.error('Error saving face data:', error);
+                showErrorToast("Error al guardar los datos faciales");
+                return false;
+            }
+        }
+
+        function trackMovement(nosePosition) {
+            if (!faceDetected) {
+                faceDetected = true;
+                return;
+            }
+
+            const centerX = 360;
+            const centerY = 360;
+            const angle = Math.atan2(nosePosition.y - centerY, nosePosition.x - centerX);
+            const degrees = angle * (180 / Math.PI);
+
+            if (progressPoints.length === 0) {
+                progressPoints.push({
+                    x: nosePosition.x,
+                    y: nosePosition.y,
+                    angle: degrees
+                });
+                return;
+            }
+
+            const lastDegree = progressPoints[progressPoints.length - 1].angle;
+            const diff = Math.abs(degrees - lastDegree);
+
+            if (diff > angleThreshold) {
+                progressPoints.push({
+                    x: nosePosition.x,
+                    y: nosePosition.y,
+                    angle: degrees
+                });
+                
+                if (progressPoints.length >= totalPoints) {
+                    saveFaceData(progressPoints).then(() => {
+                        window.location.href = '/WWW/Dashboard/Index.html';
+                    });
+                }
+            }
+            updateProgressRing();
+        }
+
+        function updateProgressRing() {
+            const circle = document.querySelector('.progress-circle');
+            const radius = circle.r.baseVal.value;
+            const circumference = radius * 2 * Math.PI;
+            const progress = (progressPoints.length / totalPoints);
+            const offset = circumference - (progress * circumference);
+            
+            circle.style.strokeDasharray = `${circumference} ${circumference}`;
+            circle.style.strokeDashoffset = offset;
+        }
+
+        function checkMovement() {
+            const now = Date.now();
+            if (now - lastMovementTime > movementTimeout) {
+                instructionText.classList.add('warning');
+            } else {
+                instructionText.classList.remove('warning');
+            }
+        }
+
+        async function handleCompletion() {
+            const loadingOverlay = document.querySelector('.loading');
+            loadingOverlay.classList.add('visible');
+            
+            try {
+                // Save face data or perform any other necessary operations
+                await new Promise(resolve => setTimeout(resolve, 1500)); // Simulated processing time
+                window.location.href = '/WWW/Dashboard/Index.html';
+            } catch (error) {
+                showErrorToast("Error al procesar el reconocimiento facial");
+                loadingOverlay.classList.remove('visible');
+            }
+        }
+
+        function showErrorToast(message) {
+            const errorIcon = `
+                <svg class="toast-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                    <path d="M12 7V13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <circle cx="12" cy="16" r="1" fill="currentColor"/>
+                </svg>
+            `;
+
+            Toastify({
+                text: `${errorIcon} ${message}`,
+                duration: 5000,
+                gravity: "top",
+                position: "right",
+                style: {
+                    background: "rgba(255, 87, 87, 0.95)",
+                    borderRadius: "8px",
+                    padding: "12px 24px",
+                    color: "white",
+                    fontFamily: "Quicksand, sans-serif",
+                    boxShadow: "0 4px 12px rgba(255, 87, 87, 0.15)",
+                    display: "flex",
+                    alignItems: "center"
+                },
+                escapeMarkup: false
+            }).showToast();
+        }
+
+        function showSuccessToast(message) {
+            Toastify({
+                text: message,
+                duration: 3000,
+                gravity: "top",
+                position: "right",
+                style: {
+                    background: "#4CAF50",
+                    borderRadius: "8px",
+                    padding: "12px 24px",
+                    color: "white",
+                    fontFamily: "Quicksand, sans-serif"
+                }
+            }).showToast();
+        }
+
+        // Start movement checking interval
+        setInterval(checkMovement, 500);
+
+        document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
