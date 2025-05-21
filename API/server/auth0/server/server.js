@@ -10,7 +10,7 @@ const app = express();
 
 // CORS configuration
 app.use(cors({
-  origin: ['http://127.0.0.1:5500', 'http://localhost:3000'],
+  origin: 'http://127.0.0.1:5500', // Specific origin instead of array
   methods: ['GET', 'POST'],
   credentials: true
 }));
@@ -196,7 +196,7 @@ app.get('/config', (req, res) => {
   });
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = 3003;  // Forzar el puerto 3003
 app.listen(PORT, () => {
-  console.log(`Servidor corriendo en puerto ${PORT}`);
+  console.log(`🔐 Servidor de autenticación corriendo en puerto ${PORT}`);
 });

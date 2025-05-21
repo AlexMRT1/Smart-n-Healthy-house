@@ -1,6 +1,6 @@
 async function loadEnvVariables() {
   try {
-    const response = await fetch('http://localhost:3000/config', {
+    const response = await fetch('http://localhost:3003/config', {
       method: 'GET',
       credentials: 'include',
       headers: {

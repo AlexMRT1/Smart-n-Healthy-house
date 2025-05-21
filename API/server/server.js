@@ -4,6 +4,9 @@ const http = require('http');
 const socketIo = require('socket.io');
 const cors = require('cors');
 
+// Add PORT constant
+const PORT = process.env.PORT || 3000;
+
 // Certificados como cadenas de texto (reemplaza con tus certificados)
 const privateKey = `-----BEGIN RSA PRIVATE KEY-----
 MIIEpgIBAAKCAQEA1k89Y5L3iCrRqlom4Ayj2yHPVDU7ngWkAIbmCFe26pDEx3/O

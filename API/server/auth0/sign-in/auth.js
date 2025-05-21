@@ -16,49 +16,54 @@ let googleProvider;
 let appleProvider;
 
 export async function initializeFirebase(config) {
-  app = initializeApp(config);
-  auth = getAuth(app);
-  googleProvider = new GoogleAuthProvider();
-  appleProvider = new OAuthProvider('apple.com');
-  
-  // Verificar si hay una sesión activa al inicializar
-  const userUID = getCookie('userUID');
-  if (userUID) {
-    try {
-      // Verificar si el UID existe en el backend
-      const response = await fetch(`http://localhost:3000/verify-user/${userUID}`);
-      const data = await response.json();
-      
-      if (!data.exists) {
-        // Si el usuario no existe, borrar todas las cookies
+  try {
+    app = initializeApp(config);
+    auth = getAuth(app);
+    googleProvider = new GoogleAuthProvider();
+    appleProvider = new OAuthProvider('apple.com');
+    
+    // Verificar si hay una sesión activa al inicializar
+    const userUID = getCookie('userUID');
+    if (userUID) {
+      try {
+        // Cambiado a puerto 3003
+        const response = await fetch(`http://localhost:3003/verify-user/${userUID}`, {
+          credentials: 'include' // Añadido para CORS
+        });
+        const data = await response.json();
+        
+        if (!data.exists) {
+          deleteCookie('userUID');
+          deleteCookie('userEmail');
+          deleteCookie('userName');
+          window.location.href = '/API/server/auth0/sign-in/index.html';
+          return;
+        }
+        
+        window.location.href = '/WWW/Dashboard/Index.html';
+        return;
+      } catch (error) {
+        console.error('Error verificando usuario:', error);
         deleteCookie('userUID');
         deleteCookie('userEmail');
         deleteCookie('userName');
         window.location.href = '/API/server/auth0/sign-in/index.html';
         return;
       }
-      
-      // Si el usuario existe, redirigir al dashboard
-      window.location.href = '/WWW/Dashboard/Index.html';
-      return;
-    } catch (error) {
-      console.error('Error verificando usuario:', error);
-      // En caso de error, borrar cookies por seguridad
-      deleteCookie('userUID');
-      deleteCookie('userEmail');
-      deleteCookie('userName');
-      window.location.href = '/API/server/auth0/sign-in/index.html';
-      return;
     }
-  }
 
-  auth.onAuthStateChanged((user) => {
-    if (user) {
-      showToast('¡Bienvenido!', 'success');
-    } else {
-      console.log('No user is signed in');
-    }
-  });
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        showToast('¡Bienvenido!', 'success');
+      }
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error inicializando Firebase:', error);
+    showToast('Error inicializando la aplicación', 'error');
+    return { success: false, error };
+  }
 }
 
 function showToast(message, type = 'info') {
@@ -142,18 +147,15 @@ export async function registerUser(email, password, nombre, event) {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
-    // Update profile first
-    await updateProfile(user, { 
-      displayName: nombre
-    });
-
-    // Refresh user to get updated profile
+    await updateProfile(user, { displayName: nombre });
     await user.reload();
     const updatedUser = auth.currentUser;
 
-    const response = await fetch('http://localhost:3000/register', {
+    // Cambiado a puerto 3003
+    const response = await fetch('http://localhost:3003/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include', // Añadido para CORS
       body: JSON.stringify({
         email,
         password,
@@ -183,9 +185,11 @@ export async function signInWithGoogle() {
   try {
     const result = await signInWithPopup(auth, googleProvider);
     
-    const response = await fetch('http://localhost:3000/social-auth', {
+    // Cambiado a puerto 3003
+    const response = await fetch('http://localhost:3003/social-auth', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include', // Añadido para CORS
       body: JSON.stringify({
         uid: result.user.uid,
         email: result.user.email,
@@ -197,7 +201,7 @@ export async function signInWithGoogle() {
     if (!response.ok) throw new Error('Error en la autenticación');
 
     showToast('¡Bienvenido!', 'success');
-    saveUserSession(result.user); // Save user session
+    saveUserSession(result.user);
     return { success: true, user: result.user };
 
   } catch (error) {
@@ -211,7 +215,7 @@ export async function signInWithApple() {
   try {
     const result = await signInWithPopup(auth, appleProvider);
     
-    const response = await fetch('http://localhost:3000/social-auth', {
+    const response = await fetch('http://localhost:3003/social-auth', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
