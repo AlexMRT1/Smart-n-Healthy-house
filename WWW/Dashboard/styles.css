@@ -1346,3 +1346,97 @@ body::before {
     opacity: 1;
     visibility: visible !important;
 }
+
+/* Fire Alert Overlay */
+.fire-alert-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2000;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.fire-border {
+    position: absolute;
+    background: rgba(255, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+    animation: fireGlow 2s infinite;
+}
+
+.fire-border-top, .fire-border-bottom {
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    height: 50px;
+    border-radius: 50%;
+    filter: blur(20px);
+}
+
+.fire-border-right, .fire-border-left {
+    top: 50%;
+    transform: translateY(-50%);
+    width: 50px;
+    height: 80%;
+    border-radius: 50%;
+    filter: blur(20px);
+}
+
+.fire-border-top {
+    top: -25px;
+}
+
+.fire-border-right {
+    right: -25px;
+}
+
+.fire-border-bottom {
+    bottom: -25px;
+}
+
+.fire-border-left {
+    left: -25px;
+}
+
+@keyframes fireGlow {
+    0% { 
+        opacity: 0.5;
+        transform: scale(1) translate(var(--translate-x, -50%), var(--translate-y, -50%));
+    }
+    50% { 
+        opacity: 0.8;
+        transform: scale(1.1) translate(var(--translate-x, -50%), var(--translate-y, -50%));
+    }
+    100% { 
+        opacity: 0.5;
+        transform: scale(1) translate(var(--translate-x, -50%), var(--translate-y, -50%));
+    }
+}
+
+/* Ajustar las variables de transformación para cada borde */
+.fire-border-top { --translate-y: 0; }
+.fire-border-right { --translate-x: 0; }
+.fire-border-bottom { --translate-y: 0; }
+.fire-border-left { --translate-x: 0; }
+
+/* Modificar el estilo de temperatura cuando hay fuego */
+.temperature.fire-alert {
+    color: #FF0000 !important;
+    text-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
+    animation: temperatureGlow 2s infinite;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    background: rgba(255, 0, 0, 0.1);
+    border-radius: 15px;
+    padding: 10px 20px;
+}
+
+@keyframes temperatureGlow {
+    0% { text-shadow: 0 0 20px rgba(255, 0, 0, 0.5); }
+    50% { text-shadow: 0 0 40px rgba(255, 0, 0, 0.8); }
+    100% { text-shadow: 0 0 20px rgba(255, 0, 0, 0.5); }
+}

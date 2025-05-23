@@ -368,8 +368,8 @@ client.on('message', (topic, message) => {
                 humidity: Number(data.humedad),
                 deviceName: "Smart'n healthy House Test Model",
                 flood: determineFloodStatus(data),
-                gas: determineGasStatus(data),
-                fire: determineFireStatus(data),
+                gas: determineGasStatus(data), // Ahora devuelve boolean
+                fire: determineFireStatus(data), // Ahora devuelve boolean
                 battery: "100%",
                 camera: "Inactiva",
                 security: "Inactiva",
@@ -397,13 +397,27 @@ function determineFloodStatus(data) {
 }
 
 function determineGasStatus(data) {
-    // Add your gas detection logic here
-    return "No detectada";
+    // Comprobar si data.gas es un booleano
+    if (typeof data.gas === 'boolean') {
+        return data.gas;
+    }
+    // Si es string "true" o "false"
+    if (typeof data.gas === 'string') {
+        return data.gas.toLowerCase() === 'true';
+    }
+    return false;
 }
 
 function determineFireStatus(data) {
-    // Add your fire detection logic here
-    return "No detectado";
+    // Comprobar si data.fire es un booleano
+    if (typeof data.fire === 'boolean') {
+        return data.fire;
+    }
+    // Si es string "true" o "false"
+    if (typeof data.fire === 'string') {
+        return data.fire.toLowerCase() === 'true';
+    }
+    return false;
 }
 
 function determineGeneralStatus(data) {

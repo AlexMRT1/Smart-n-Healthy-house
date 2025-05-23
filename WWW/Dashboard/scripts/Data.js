@@ -284,6 +284,55 @@ class DeviceDataManager {
             roomNameElement.style.color = '#1a1a1a';
         }
 
+        // Actualizar indicador de gas
+        const gasValue = document.querySelector('.sensor-value[data-sensor="gas"]');
+        if (gasValue) {
+            gasValue.textContent = data.gas === true ? "Detectada" : "No detectada";
+            if (data.gas === true) {
+                gasValue.classList.add('alert');
+            } else {
+                gasValue.classList.remove('alert');
+            }
+        }
+
+        // Actualizar indicador de fuego
+        const fireValue = document.querySelector('.sensor-value[data-sensor="fire"]');
+        if (fireValue) {
+            fireValue.textContent = data.fire === true ? "Detectado" : "No detectado";
+            if (data.fire === true) {
+                fireValue.classList.add('alert');
+            } else {
+                fireValue.classList.remove('alert');
+            }
+        }
+
+        // Manejar alerta de fuego
+        const fireAlertOverlay = document.querySelector('.fire-alert-overlay');
+        const temperatureDisplay = document.querySelector('.temperature');
+        
+        if (data.fire === true) {
+            if (fireAlertOverlay) {
+                fireAlertOverlay.style.display = 'block';
+            }
+            if (temperatureDisplay) {
+                temperatureDisplay.classList.add('fire-alert');
+                temperatureDisplay.textContent = 'Fuego detectado';
+            }
+        } else {
+            if (fireAlertOverlay) {
+                fireAlertOverlay.style.display = 'none';
+            }
+            if (temperatureDisplay) {
+                temperatureDisplay.classList.remove('fire-alert');
+                if (data.temperature !== undefined) {
+                    const tempValue = parseFloat(data.temperature);
+                    if (!isNaN(tempValue)) {
+                        temperatureDisplay.textContent = `${tempValue}°`;
+                    }
+                }
+            }
+        }
+
         this.updateSensorDisplays();
     }
 
