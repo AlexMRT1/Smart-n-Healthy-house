@@ -3,6 +3,9 @@
     --padding-mobile: 15px;
     --padding-tablet: 25px;
     --padding-desktop: 40px;
+    --glow-color: rgba(255, 0, 0, 0.3);
+    --glow-spread: 15px;
+    --glow-blur: 20px;
 }
 ::-webkit-scrollbar{
     display: none !important;
@@ -457,45 +460,55 @@ body::before {
     border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-/* Glass effect para widgets */
-.widget.glass-effect {
-    background: rgba(255, 255, 255, 0.2);
+.glass-effect {
+    position: relative;
+    overflow: hidden;
+}
+
+.glass-effect::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    box-shadow:
+        var(--glow-spread) var(--glow-spread) var(--glow-blur) var(--glow-color),
+        calc(-1 * var(--glow-spread)) var(--glow-spread) var(--glow-blur) var(--glow-color),
+        var(--glow-spread) calc(-1 * var(--glow-spread)) var(--glow-blur) var(--glow-color),
+        calc(-1 * var(--glow-spread)) calc(-1 * var(--glow-spread)) var(--glow-blur) var(--glow-color);
+    z-index: -1;
+}
+
+/* Modificar los elementos que tienen glass-effect */
+.widget.glass-effect,
+.sensor-item.glass-effect,
+.toast.glass-effect {
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    box-shadow: 
-        0 4px 6px -1px rgba(0, 0, 0, 0.1),
-        0 2px 4px -1px rgba(0, 0, 0, 0.06),
-        inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.widget.glass-effect:hover {
-    background: rgba(255, 255, 255, 0.25);
-    box-shadow: 
-        0 8px 12px -1px rgba(0, 0, 0, 0.12),
-        0 4px 6px -1px rgba(0, 0, 0, 0.08),
-        inset 0 0 0 1px rgba(255, 255, 255, 0.2);
-    transform: translateY(-2px);
+/* Ajustar el efecto para el toast de error */
+.error-toast.glass-effect {
+    background: rgba(255, 87, 87, 0.95);
+    --glow-color: rgba(255, 0, 0, 0.4);
+    --glow-spread: 10px;
+    --glow-blur: 15px;
 }
 
-/* Ajustes para mejor contraste del texto */
-.widget.glass-effect .widget-label {
-    color: rgba(0, 0, 0, 0.8);
-    font-weight: 500;
-}
-
-.widget.glass-effect .widget-status {
-    color: rgba(0, 0, 0, 0.7);
-}
-
-/* Mejora para dispositivos que no soportan backdrop-filter */
-@supports not (backdrop-filter: blur(8px)) {
-    .widget.glass-effect {
-        background: rgba(255, 255, 255, 0.9);
+/* Mejorar la visibilidad en dispositivos móviles */
+@media (max-width: 768px) {
+    :root {
+        --glow-spread: 10px;
+        --glow-blur: 15px;
     }
-    
-    .widget.glass-effect:hover {
-        background: rgba(255, 255, 255, 0.95);
+}
+
+/* Soporte para preferencias de movimiento reducido */
+@media (prefers-reduced-motion: reduce) {
+    .glass-effect::after {
+        transition: none !important;
     }
 }
 

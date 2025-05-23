@@ -202,26 +202,55 @@
     // Función para enviar el código
     async function sendVerificationCode() {
         try {
+            // Get email from URL parameters, localStorage, or cookies
+            const userEmail = new URLSearchParams(window.location.search).get('email') || 
+                             localStorage.getItem('userEmail') ||
+                             decodeURIComponent(document.cookie
+                                .split('; ')
+                                .find(row => row.startsWith('userEmail='))
+                                ?.split('=')[1] || '');
+            
+            // Log detailed information
+            console.log('Cookies encontradas:', {
+                raw: document.cookie,
+                parsed: document.cookie.split('; ').reduce((acc, cookie) => {
+                    const [key, value] = cookie.split('=');
+                    acc[key] = decodeURIComponent(value);
+                    return acc;
+                }, {})
+            });
+            console.log('Email encontrado:', userEmail);
+            
+            if (!userEmail) {
+                console.log('No se encontró email en parámetros, localStorage ni cookies');
+                alert('No se encontró el correo electrónico');
+                return;
+            }
+
             const response = await fetch('http://localhost:3002/send-verification', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                credentials: 'include' // Important for cookies
+                credentials: 'include',
+                body: JSON.stringify({ email: userEmail })
             });
             
             if (!response.ok) {
+                console.log('Error en la respuesta:', response.status);
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             
             const data = await response.json();
+            console.log('Respuesta del servidor:', data);
+            
             if (data.success) {
                 alert('Código enviado correctamente');
             } else {
                 alert(data.message || 'Error al enviar el código');
             }
         } catch (error) {
-            console.error('Error:', error);
+            console.error('Error detallado:', error);
             alert('Error al enviar el código. Por favor, intente nuevamente.');
         }
     }
