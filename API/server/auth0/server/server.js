@@ -65,10 +65,15 @@ app.post("/register", async (req, res) => {
       IsDeveloper: false,
       Device: "",
       DeviceSN: "",
-      Sensors: ['battery: ""','Fire: ""','water_level: ""','cam:"active"','gas: ""'],
-      UserImg: "", // Aquí se guardará la imagen facial
-      faceData: null, // Aquí se guardarán los datos del reconocimiento facial
+      UserImg: "",
+      faceData: null,
       lastFaceUpdate: null,
+      // Agregar campos de ubicación
+      location: {
+        country: "",
+        state: "",
+        city: ""
+      },
       createdAt: new Date().toISOString()
     });
 

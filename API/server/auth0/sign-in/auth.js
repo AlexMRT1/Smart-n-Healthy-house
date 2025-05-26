@@ -140,10 +140,32 @@ function saveUserSession(user) {
   }
 }
 
+async function getUserLocation() {
+  try {
+    const response = await fetch('https://ipapi.co/json/');
+    const data = await response.json();
+    return {
+      country: data.country_name,
+      state: data.region,
+      city: data.city
+    };
+  } catch (error) {
+    console.error('Error getting location:', error);
+    return {
+      country: "",
+      state: "",
+      city: ""
+    };
+  }
+}
+
 export async function registerUser(email, password, nombre, event) {
   if (event) event.preventDefault();
   
   try {
+    // Obtener ubicación antes del registro
+    const location = await getUserLocation();
+    
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
@@ -160,7 +182,8 @@ export async function registerUser(email, password, nombre, event) {
         email,
         password,
         nombre,
-        uid: updatedUser.uid
+        uid: updatedUser.uid,
+        location // Incluir la ubicación en los datos
       })
     });
 

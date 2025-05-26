@@ -1075,185 +1075,76 @@ body::before {
 
 /* Sensor Grid Styles */
 .sensor-grid {
-    display: none;  /* Cambiado de 'grid' a 'none' */
-    visibility: hidden;  /* Añadido */
-    opacity: 0;  /* Añadido */
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1.25rem;
-    padding: 2rem;
-    width: calc(100% - 4rem);
+    display: none;
+    opacity: 0;
+    width: 90%;
     max-width: 1200px;
     margin: 0 auto;
+    padding: 1rem;
     position: fixed;
-    left: 50%;
     top: 50%;
+    left: 50%;
     transform: translate(-50%, -50%);
-    height: 80vh;
-    overflow-y: auto;
     z-index: 1000;
 }
 
 .sensor-grid.visible {
-    display: grid;
-    visibility: visible;
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
     opacity: 1;
 }
 
 .sensor-item {
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 16px;
-    padding: 1.5rem;
-    min-height: 120px;
+    aspect-ratio: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 0.75rem;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 
-        0 4px 6px -1px rgba(0, 0, 0, 0.1),
-        0 2px 4px -1px rgba(0, 0, 0, 0.06),
-        inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+    padding: 1.5rem;
+    border-radius: 16px;
+    transition: transform 0.3s ease;
+    text-align: center;
 }
 
-.sensor-item::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: radial-gradient(circle at center, rgba(255,255,255,0.1) 0%, transparent 70%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.sensor-item:hover {
-    transform: translateY(-4px);
-    background: rgba(255, 255, 255, 0.2);
-    box-shadow: 
-        0 12px 24px -1px rgba(0, 0, 0, 0.15),
-        0 4px 8px -1px rgba(0, 0, 0, 0.08),
-        inset 0 0 0 1px rgba(255, 255, 255, 0.25);
-}
-
-.sensor-item:hover::before {
-    opacity: 1;
-}
-
-.sensor-icon {
-    width: 45px;
-    height: 45px;
+.sensor-item .sensor-icon {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 1rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 12px;
-    padding: 0.75rem;
-    transition: transform 0.3s ease;
 }
 
-.sensor-icon svg {
-    width: 24px;
-    height: 24px;
-    color: rgba(26, 26, 26, 0.8);
-    transition: transform 0.3s ease;
-}
-
-.sensor-item:hover .sensor-icon {
-    transform: scale(1.1);
-    background: rgba(255, 255, 255, 0.25);
-}
-
-.sensor-label {
-    font-size: 0.95rem;
+.sensor-item .sensor-label {
+    font-size: 0.9rem;
     font-weight: 500;
-    color: rgba(26, 26, 26, 0.9);
-    text-align: center;
-    transition: transform 0.3s ease;
+    margin-bottom: 0.5rem;
 }
 
-.sensor-value {
-    font-size: 1.75rem;
+.sensor-item .sensor-value {
+    font-size: 1.5rem;
     font-weight: 600;
-    color: rgba(26, 26, 26, 0.95);
-    transition: transform 0.3s ease;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .sensor-grid {
+/* Ajuste para tablets */
+@media (max-width: 992px) {
+    .sensor-grid.visible {
         grid-template-columns: repeat(2, 1fr);
-        gap: 0.875rem;
-        padding: 0.875rem;
-        margin-top: 70px;
-    }
-
-    .sensor-item {
-        min-height: 110px;
-        padding: 1rem;
-    }
-
-    .sensor-icon {
-        width: 35px;
-        height: 35px;
-        padding: 0.5rem;
-    }
-
-    .sensor-label {
-        font-size: 0.85rem;
-    }
-
-    .sensor-value {
-        font-size: 1.4rem;
+        gap: 1rem;
     }
 }
 
-@media (max-width: 480px) {
-    .sensor-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.75rem;
-        padding: 0.75rem;
-        margin-top: 60px;
-    }
-
-    .sensor-item {
-        min-height: 100px;
-        padding: 0.875rem;
-    }
-
-    .sensor-icon {
-        width: 32px;
-        height: 32px;
-        padding: 0.4rem;
-    }
-
-    .sensor-label {
-        font-size: 0.75rem;
-        margin-top: 0.25rem;
-    }
-
-    .sensor-value {
-        font-size: 1.2rem;
-        margin-top: 0.25rem;
-    }
-}
-
-@media (max-width: 360px) {
-    .sensor-grid {
+/* Ajuste para móviles */
+@media (max-width: 576px) {
+    .sensor-grid.visible {
         grid-template-columns: 1fr;
-        gap: 0.625rem;
-        padding: 0.625rem;
+        gap: 0.875rem;
     }
-
+    
     .sensor-item {
-        min-height: 90px;
+        aspect-ratio: auto;
+        padding: 1rem;
     }
 }
 
@@ -1266,6 +1157,104 @@ body::before {
 
     .sensor-item {
         min-height: 80px;
+    }
+}
+
+.third-panel {
+    display: none;
+    opacity: 0;
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem;
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: grid;
+    grid-template-areas:
+        "spotify spotify weather clock"
+        "spotify spotify wind forecast"
+        "chart chart forecast forecast";
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(3, minmax(100px, auto));
+    gap: 1rem;
+    z-index: 1000;
+}
+
+.widget-spotify {
+    grid-area: spotify;
+    min-height: 200px;
+}
+
+.widget-weather {
+    grid-area: weather;
+}
+
+.widget-clock {
+    grid-area: clock;
+}
+
+.widget-wind {
+    grid-area: wind;
+}
+
+.widget-forecast {
+    grid-area: forecast;
+}
+
+.widget-chart {
+    grid-area: chart;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+    .third-panel {
+        grid-template-areas:
+            "spotify spotify weather"
+            "spotify spotify clock"
+            "wind forecast forecast"
+            "chart chart chart";
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: auto;
+        gap: 0.875rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .third-panel {
+        grid-template-areas:
+            "spotify spotify"
+            "weather clock"
+            "wind forecast"
+            "chart chart";
+        grid-template-columns: repeat(2, 1fr);
+        bottom: 1rem;
+        gap: 0.75rem;
+    }
+
+    .widget-spotify {
+        min-height: 150px;
+    }
+}
+
+@media (max-width: 480px) {
+    .third-panel {
+        grid-template-areas:
+            "spotify"
+            "weather"
+            "clock"
+            "wind"
+            "forecast"
+            "chart";
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+        padding: 0.5rem;
+        width: 95%;
+    }
+
+    .widget-spotify {
+        min-height: 120px;
     }
 }
 

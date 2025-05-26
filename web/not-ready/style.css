@@ -1,0 +1,694 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    /* Sistema de colores */
+    --background-gradient-1: #f5f7fa;
+    --background-gradient-2: #e4e8ec;
+    --accent-success: #4CAF50;
+    --accent-warning: #FF9800;
+    --accent-error: #FF4444;
+    --accent-interface: #4A90E2;
+    --accent-devices: #007bff;
+    
+    /* Glassmorphism */
+    --glass-bg: rgba(255, 255, 255, 0.15);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --glass-shadow: rgba(74, 144, 226, 0.3);
+
+    /* Agregamos variables para el navbar */
+    --navbar-height: 6rem;
+    --navbar-padding: 0 2rem;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    background: linear-gradient(135deg, var(--background-gradient-1), var(--background-gradient-2));
+}
+
+/* Prevenir scroll horizontal */
+html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: var(--navbar-height);
+    padding: var(--navbar-padding);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border-bottom: 1px solid var(--glass-border);
+    animation: slideDown 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1000;
+}
+
+.nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.nav-brand svg {
+    width: 80px;
+    height: 80px;
+    transition: transform 0.3s ease;
+}
+
+.nav-brand svg:hover {
+    transform: scale(1.05);
+}
+
+.nav-brand h1 {
+    color: #191919;
+    font-size: 1.8rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    white-space: nowrap;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    list-style: none;
+    margin-left: auto; /* Esto empuja los links a la derecha */
+}
+
+.nav-item {
+    color: #191919;
+    text-decoration: none;
+    font-size: clamp(0.9rem, 1.5vw, 1rem);
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    margin-right: 0; /* Eliminamos el margen por defecto */
+    border-radius: 10px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.nav-item::before {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--accent-interface);
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav-item:hover {
+    color: var(--accent-interface);
+    background: rgba(74, 144, 226, 0.1);
+}
+
+.nav-item:hover::before {
+    width: 100%;
+}
+
+/* Quitamos el margen del último elemento */
+.nav-links > li:last-child .nav-item {
+    margin-right: 15px; /* Agregamos el espaciado a la derecha solo al último elemento */
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Estilos para el botón App */
+.app-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    background: linear-gradient(135deg, var(--accent-interface), var(--accent-devices));
+    color: white;
+    padding: 0.8rem 1.8rem;
+    border: none;
+    border-radius: 12px;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 500;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 15px rgba(74, 144, 226, 0.3);
+}
+
+.app-button i {
+    font-size: 1.2rem;
+    transform-origin: center;
+    transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.app-button span {
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.app-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(74, 144, 226, 0.5);
+    background: linear-gradient(160deg, var(--accent-interface), var(--accent-devices));
+}
+
+.app-button:hover i {
+    transform: translateY(-1px) rotate(-12deg) scale(1.2);
+}
+
+/* Estilos para el menú hamburguesa */
+.hamburger-menu {
+    display: none;
+    cursor: pointer;
+    width: 30px;
+    height: 20px;
+    position: relative;
+    z-index: 2000;
+}
+
+.bar {
+    width: 100%;
+    height: 2px;
+    background-color: #191919;
+    position: absolute;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.bar:nth-child(1) { top: 0; }
+.bar:nth-child(2) { top: 50%; transform: translateY(-50%); }
+.bar:nth-child(3) { bottom: 0; }
+
+/* Clase active para la animación del hamburger */
+.hamburger-menu.active .bar:nth-child(1) {
+    transform: translateY(9px) rotate(45deg);
+}
+
+.hamburger-menu.active .bar:nth-child(2) {
+    opacity: 0;
+}
+
+.hamburger-menu.active .bar:nth-child(3) {
+    transform: translateY(-9px) rotate(-45deg);
+}
+
+/* Modificamos los media queries para móvil */
+@media (max-width: 768px) {
+    .app-button {
+        padding: 0.6rem 1.2rem;
+        font-size: 0.8rem;
+    }
+    
+    .navbar {
+        padding: 0 1rem;
+        height: auto;
+        min-height: var(--navbar-height);
+    }
+    
+    .nav-brand h1 {
+        font-size: 1.2rem;
+        margin: 1rem 0;
+    }
+    
+    .hamburger-menu {
+        display: block;
+        cursor: pointer;
+    }
+
+    .nav-links {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh;
+        display: none; /* Cambiamos a display none por defecto */
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2rem;
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 1900;
+    }
+
+    .nav-links.active {
+        display: flex;
+        opacity: 1;
+        visibility: visible;
+        animation: fadeIn 0.3s ease forwards;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    /* Estilizamos los items del menú para mejor visibilidad */
+    .nav-item {
+        font-size: 1.2rem;
+        font-weight: 500;
+        color: #191919;
+        width: 100%;
+        max-width: 300px;
+        text-align: center;
+        margin: 0.5rem 0;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    /* Ajustamos el botón de inicio de sesión */
+    .Start-button {
+        margin-top: 2rem;
+        width: 100%;
+        max-width: 300px;
+    }
+
+    .app-button {
+        width: 100%;
+        padding: 1rem 2rem;
+        font-size: 1rem;
+    }
+
+    /* Ajustes para los dropdowns en móvil */
+    .dropdown-menu {
+        position: relative;
+        top: 0;
+        left: 0;
+        transform: none;
+        width: 100%;
+        background: rgba(255, 255, 255, 0.05);
+        margin-top: 0.5rem;
+        display: none;
+    }
+
+    .dropdown.active .dropdown-menu {
+        display: block;
+        opacity: 1;
+        visibility: visible;
+        transform: none;
+    }
+
+    .dropdown-menu li a {
+        padding: 1rem;
+        text-align: center;
+    }
+
+    .dropdown-menu li a:hover {
+        transform: none;
+    }
+}
+
+/* Estilos para los dropdowns */
+.dropdown {
+    position: relative;
+    cursor: pointer;
+}
+
+/* Actualizando estilos de dropdowns */
+.dropdown-menu {
+    position: absolute;
+    top: calc(100% + 15px); /* Aumentamos la distancia desde el elemento padre */
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    min-width: 220px;
+    padding: 1rem;          /* Aumentamos el padding interno */
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    z-index: 100;
+}
+
+.dropdown::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    height: 30px; /* Área de tolerancia */
+    background: transparent;
+}
+
+.dropdown-menu::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 8px solid rgba(255, 255, 255, 0.2);
+}
+
+.dropdown:hover .dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: all;
+    transform: translateX(-50%) translateY(0);
+}
+
+.dropdown-menu li {
+    list-style: none;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s ease;
+}
+
+.dropdown:hover .dropdown-menu li {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Agregando delay a cada elemento del dropdown */
+.dropdown-menu li:nth-child(1) { transition-delay: 0.1s; }
+.dropdown-menu li:nth-child(2) { transition-delay: 0.15s; }
+.dropdown-menu li:nth-child(3) { transition-delay: 0.2s; }
+.dropdown-menu li:nth-child(4) { transition-delay: 0.25s; }
+
+.dropdown-menu li a {
+    color: #191919; /* Cambiamos el color del texto a negro */
+    text-decoration: none;
+    padding: 0.8rem 1.2rem;
+    display: block;
+    border-radius: 12px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+    position: relative;
+    overflow: hidden;
+}
+
+.dropdown-menu li a::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dropdown-menu li a:hover::before {
+    transform: translateX(100%);
+}
+
+.dropdown-menu li a:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--accent-interface);
+    transform: translateX(5px);
+}
+
+.dropdown .nav-item i {
+    margin-left: 4px;
+    transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.dropdown:hover .nav-item i {
+    transform: rotate(180deg);
+}
+
+/* Ajustes para móvil actualizados */
+@media (max-width: 768px) {
+    .dropdown-menu {
+        position: static;
+        transform: none;
+        background: rgba(255, 255, 255, 0.05);
+        border: none;
+        box-shadow: none;
+        margin-top: 0.5rem;
+        padding: 0;
+        width: 100%;
+        max-height: 0;
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .dropdown.active .dropdown-menu {
+        max-height: 500px;
+        padding: 0.8rem;
+        margin: 1rem 0;
+    }
+
+    .dropdown-menu::before {
+        display: none;
+    }
+
+    .dropdown-menu li a {
+        text-align: center;
+        padding: 1rem;
+        margin: 0.3rem 0;
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .dropdown-menu li a:hover {
+        transform: scale(1.02);
+    }
+
+    .nav-item {
+        margin-right: 0; /* Eliminamos el margen en móvil */
+    }
+}
+
+/* Media queries para el contenido principal */
+@media (max-width: 768px) {
+    /* Solo mostramos el SVG de la casa */
+    .house-outline {
+        left: -550px;
+        opacity: 0.08;
+        width: 700px;
+        height: 100vh;
+    }
+
+    .security-outline {
+        display: none; /* Ocultamos el SVG de seguridad en móvil */
+    }
+
+    /* Ajustes del contenido principal */
+    .feature-section {
+        padding: 2rem 1rem;
+        margin-top: 4rem;
+    }
+
+    .feature-inner {
+        flex-direction: column;
+        gap: 3rem;
+        padding: 0 1rem;
+    }
+
+    .lottie-container {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+
+    dotlottie-player {
+        width: min(300px, 90vw) !important;
+        height: min(300px, 90vw) !important;
+    }
+
+    .text-container {
+        width: 100%;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .text-container h2 {
+        font-size: clamp(1.5rem, 5vw, 2rem);
+        white-space: normal;
+        line-height: 1.3;
+        margin-bottom: 0.5rem;
+        padding: 0 0.5rem;
+    }
+
+    .text-container p {
+        font-size: clamp(0.9rem, 4vw, 1rem);
+        line-height: 1.6;
+        padding: 0 1rem;
+        max-width: 500px;
+        margin: 0 auto;
+    }
+}
+
+/* Ajustes para pantallas muy pequeñas */
+@media (max-width: 375px) {
+    .house-outline {
+        left: -600px;
+        opacity: 0.05;
+    }
+
+    dotlottie-player {
+        width: 250px !important;
+        height: 250px !important;
+    }
+
+    .text-container h2 {
+        font-size: 1.6rem;
+        line-height: 1.4;
+    }
+
+    .text-container p {
+        font-size: 0.9rem;
+    }
+}
+
+/* Prefers reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .navbar {
+        animation: none;
+    }
+    
+    .nav-item,
+    .nav-item::before {
+        transition: none;
+    }
+}
+
+.feature-section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - var(--navbar-height));
+    margin: 0 auto;
+    padding: 0;
+}
+
+.feature-inner {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem; /* Espacio mínimo entre ambos */
+    max-width: 700px; /* Ajusta según tus necesidades */
+    width: 100%;
+}
+
+.lottie-container,
+.text-container {
+    /* Quitar el flex: 1 para que se ajusten al contenido y no se separen automáticamente */
+    flex: none;
+}
+
+.text-container {
+    flex: 1;
+    text-align: left;
+    margin: 0; /* Quita cualquier margen extra */
+}
+
+.text-container h2 {
+    font-size: 2rem;
+    color: #191919;
+    margin-bottom: 1rem;
+    line-height: 1.3;
+    /* Remove properties that limit text wrapping */
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+}
+
+/* Estilo para el contorno de la mitad de una casa */
+.house-outline {
+    position: fixed;
+    left: -400px; /* Ajustamos más a la izquierda */
+    top: var(--navbar-height);
+    height: calc(100vh - var(--navbar-height));
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.3;
+    overflow: hidden; /* Asegura que no haya desbordamiento */
+    width: 800px; /* Ancho específico */
+}
+
+.house-outline svg {
+    height: 100%;
+    width: 100%;
+    stroke: #007bff;
+    stroke-width: 2;
+}
+
+/* Estilo para el contorno de seguridad */
+.security-outline {
+    position: fixed;
+    right: -243px; /* Cambiamos left por right */
+    top: 50%; /* Lo mantenemos en la mitad de la pantalla */
+    transform: translateY(-50%); /* Centramos verticalmente */
+    height: calc(100vh - var(--navbar-height));
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.3;
+}
+
+.security-outline svg {
+    height: 100%;
+    width: 486px;
+    stroke: #007bff;
+    stroke-width: 2;
+    transform: scaleX(-1); /* Volteamos horizontalmente el SVG */
+}
+
+/* Desktop styles for text container */
+.text-container h2 {
+    font-size: 2rem;
+    color: #191919;
+    margin-bottom: 1rem;
+    line-height: 1.3;
+    white-space: nowrap; /* Force single line on desktop */
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Mobile styles */
+@media (max-width: 768px) {
+    .text-container h2 {
+        font-size: clamp(1.5rem, 5vw, 2rem);
+        white-space: normal; /* Allow wrapping on mobile */
+        overflow: visible;
+        text-overflow: clip;
+        line-height: 1.3;
+        margin-bottom: 0.5rem;
+        padding: 0 0.5rem;
+    }
+}
+
+/* Very small screens */
+@media (max-width: 375px) {
+    .text-container h2 {
+        font-size: 1.6rem;
+        line-height: 1.4;
+    }
+}

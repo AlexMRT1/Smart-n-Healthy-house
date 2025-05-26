@@ -358,6 +358,172 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Variable para controlar el estado
     let isGridVisible = false;
+    let isThirdPanelVisible = false;
+
+    // Actualizar la hora cada segundo
+    function updateClock() {
+        const clockElement = document.getElementById('current-time');
+        if (clockElement) {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            clockElement.textContent = `${hours}:${minutes}`;
+        }
+    }
+
+    // Iniciar el reloj cuando el documento esté listo
+    document.addEventListener('DOMContentLoaded', () => {
+        updateClock();
+        setInterval(updateClock, 1000);
+        
+        // Modificar la función toggleView para manejar los tres paneles
+        const toggleView = (direction) => {
+            const roomTemp = document.querySelector('.room-temp-container');
+            const widgets = document.querySelector('.widgets-container');
+            const sensorGrid = document.querySelector('.sensor-grid');
+            const thirdPanel = document.querySelector('.third-panel');
+            
+            if (direction === 'down') {
+                if (!isGridVisible && !isThirdPanelVisible) {
+                    // Primera vista a segunda vista
+                    gsap.to([roomTemp, widgets], {
+                        opacity: 0,
+                        y: -20,
+                        duration: 0.3,
+                        onComplete: () => {
+                            roomTemp.style.display = 'none';
+                            widgets.style.display = 'none';
+                            sensorGrid.style.display = 'grid';
+                            sensorGrid.classList.add('visible');
+                            gsap.fromTo(sensorGrid, 
+                                { opacity: 0, y: 20 },
+                                { opacity: 1, y: 0, duration: 0.3 }
+                            );
+                        }
+                    });
+                    isGridVisible = true;
+                    isThirdPanelVisible = false;
+                } else if (isGridVisible && !isThirdPanelVisible) {
+                    // Segunda vista a tercera vista
+                    gsap.to(sensorGrid, {
+                        opacity: 0,
+                        y: -20,
+                        duration: 0.3,
+                        onComplete: () => {
+                            sensorGrid.style.display = 'none';
+                            sensorGrid.classList.remove('visible');
+                            thirdPanel.style.display = 'grid';
+                            thirdPanel.classList.add('visible');
+                            gsap.fromTo(thirdPanel,
+                                { opacity: 0, y: 20 },
+                                { opacity: 1, y: 0, duration: 0.3 }
+                            );
+                        }
+                    });
+                    isGridVisible = false;
+                    isThirdPanelVisible = true;
+                }
+            } else if (direction === 'up') {
+                if (isThirdPanelVisible) {
+                    // Tercera vista a segunda vista
+                    gsap.to(thirdPanel, {
+                        opacity: 0,
+                        y: -20,
+                        duration: 0.3,
+                        onComplete: () => {
+                            thirdPanel.style.display = 'none';
+                            thirdPanel.classList.remove('visible');
+                            sensorGrid.style.display = 'grid';
+                            sensorGrid.classList.add('visible');
+                            gsap.fromTo(sensorGrid,
+                                { opacity: 0, y: 20 },
+                                { opacity: 1, y: 0, duration: 0.3 }
+                            );
+                        }
+                    });
+                    isThirdPanelVisible = false;
+                    isGridVisible = true;
+                } else if (isGridVisible) {
+                    // Segunda vista a primera vista
+                    gsap.to(sensorGrid, {
+                        opacity: 0,
+                        y: -20,
+                        duration: 0.3,
+                        onComplete: () => {
+                            sensorGrid.style.display = 'none';
+                            sensorGrid.classList.remove('visible');
+                            roomTemp.style.display = 'flex';
+                            widgets.style.display = 'grid';
+                            gsap.fromTo([roomTemp, widgets],
+                                { opacity: 0, y: 20 },
+                                { opacity: 1, y: 0, duration: 0.3 }
+                            );
+                        }
+                    });
+                    isGridVisible = false;
+                    isThirdPanelVisible = false;
+                }
+            }
+        };
+
+        // Observer para scroll
+        const scrollObserver = Observer.create({
+            target: window,
+            type: "scroll,touch,pointer",
+            onChange: ({ velocityY }) => {
+                if (Math.abs(velocityY) > 50) {
+                    toggleView(velocityY > 0);
+                }
+            }
+        });
+
+        // Actualizar el manejador de eventos de scroll
+        window.addEventListener('wheel', (e) => {
+            clearTimeout(scrollTimeout);
+            const now = Date.now();
+            
+            if (now - lastScrollTime > 500) {
+                if (Math.abs(e.deltaY) > 30) {
+                    toggleView(e.deltaY > 0 ? 'down' : 'up');
+                    lastScrollTime = now;
+                }
+            }
+            
+            scrollTimeout = setTimeout(() => {
+                lastScrollTime = 0;
+            }, 500);
+        }, { passive: true });
+
+        // Actualizar el manejador de eventos táctiles
+        let touchStartY;
+        let touchEndY;
+
+        document.addEventListener('touchstart', (e) => {
+            touchStartY = e.touches[0].clientY;
+        }, { passive: true });
+
+        document.addEventListener('touchend', (e) => {
+            if (isTouching && touchStartY !== null) {
+                const touchEndY = e.changedTouches[0].clientY;
+                const diff = touchStartY - touchEndY;
+                
+                if (Math.abs(diff) > 50) {
+                    toggleView(diff > 0 ? 'down' : 'up');
+                }
+                
+                touchStartY = null;
+                isTouching = false;
+            }
+        }, { passive: true });
+
+        // Actualizar el manejador de teclas
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                e.preventDefault();
+                toggleView(e.key === 'ArrowDown' ? 'down' : 'up');
+            }
+        });
+    });
 
     // Función para alternar la vista
     const toggleView = (show) => {
@@ -392,87 +558,96 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Observer para scroll
-    const scrollObserver = Observer.create({
-        target: window,
-        type: "scroll,touch,pointer",
-        onChange: ({ velocityY }) => {
-            if (Math.abs(velocityY) > 50) {
-                toggleView(velocityY > 0);
-            }
-        }
-    });
-
     // Actualizar la función toggleSensors para mejor manejo de estados y animaciones
     const toggleSensors = (show) => {
-        if (show && !isGridVisible) {
-            // Primero ocultamos los elementos actuales
+        const thirdPanel = document.querySelector('.third-panel');
+        
+        if (show && !isGridVisible && !isThirdPanelVisible) {
+            // Primera vista a segunda vista
             gsap.to([roomTemp, widgets], {
                 opacity: 0,
                 duration: 0.3,
                 onComplete: () => {
                     roomTemp.style.display = 'none';
                     widgets.style.display = 'none';
-                    
-                    // Preparar el grid antes de mostrarlo
-                    gsap.set('.sensor-grid', {
-                        display: 'grid',
-                        visibility: 'visible',
-                        opacity: 1
-                    });
-                    
-                    gsap.set('.sensor-item', {
-                        opacity: 0,
-                        y: 20
-                    });
-                    
-                    // Mostrar grid y animar los elementos
+                    sensorGrid.style.display = 'grid';
                     sensorGrid.classList.add('visible');
                     
-                    gsap.to('.sensor-item', {
-                        y: 0,
+                    gsap.to(sensorGrid, {
                         opacity: 1,
-                        duration: 0.4,
-                        stagger: {
-                            amount: 0.3,
-                            grid: "auto",
-                            from: "start"
-                        },
-                        ease: 'power2.out'
+                        y: 0,
+                        duration: 0.3
                     });
                 }
             });
             isGridVisible = true;
+            isThirdPanelVisible = false;
             
-        } else if (!show && isGridVisible) {
-            // Animar salida de sensores
-            gsap.to('.sensor-item', {
-                y: 20,
+        } else if (show && isGridVisible && !isThirdPanelVisible) {
+            // Segunda vista a tercera vista
+            gsap.to(sensorGrid, {
                 opacity: 0,
+                y: -20,
                 duration: 0.3,
-                stagger: {
-                    amount: 0.2,
-                    grid: "auto",
-                    from: "end"
-                },
                 onComplete: () => {
+                    sensorGrid.style.display = 'none';
                     sensorGrid.classList.remove('visible');
-                    gsap.set('.sensor-grid', {
-                        display: 'none',
-                        visibility: 'hidden',
-                        opacity: 0
-                    });
+                    thirdPanel.style.display = 'grid';
+                    thirdPanel.classList.add('visible');
                     
-                    roomTemp.style.display = 'flex';
-                    widgets.style.display = 'grid';
-                    gsap.to([roomTemp, widgets], {
+                    gsap.to(thirdPanel, {
                         opacity: 1,
-                        duration: 0.3,
-                        ease: 'power2.out'
+                        y: 0,
+                        duration: 0.3
                     });
                 }
             });
             isGridVisible = false;
+            isThirdPanelVisible = true;
+            
+        } else if (!show && isThirdPanelVisible) {
+            // Tercera vista a segunda vista
+            gsap.to(thirdPanel, {
+                opacity: 0,
+                y: 20,
+                duration: 0.3,
+                onComplete: () => {
+                    thirdPanel.style.display = 'none';
+                    thirdPanel.classList.remove('visible');
+                    sensorGrid.style.display = 'grid';
+                    sensorGrid.classList.add('visible');
+                    
+                    gsap.to(sensorGrid, {
+                        opacity: 1,
+                        y: 0,
+                        duration: 0.3
+                    });
+                }
+            });
+            isThirdPanelVisible = false;
+            isGridVisible = true;
+            
+        } else if (!show && isGridVisible) {
+            // Segunda vista a primera vista
+            gsap.to(sensorGrid, {
+                opacity: 0,
+                y: 20,
+                duration: 0.3,
+                onComplete: () => {
+                    sensorGrid.style.display = 'none';
+                    sensorGrid.classList.remove('visible');
+                    roomTemp.style.display = 'flex';
+                    widgets.style.display = 'grid';
+                    
+                    gsap.to([roomTemp, widgets], {
+                        opacity: 1,
+                        y: 0,
+                        duration: 0.3
+                    });
+                }
+            });
+            isGridVisible = false;
+            isThirdPanelVisible = false;
         }
     };
 
@@ -484,7 +659,7 @@ document.addEventListener('DOMContentLoaded', () => {
         clearTimeout(scrollTimeout);
         const now = Date.now();
         
-        if (now - lastScrollTime > 500) { // Prevenir activaciones muy seguidas
+        if (now - lastScrollTime > 500) {
             if (Math.abs(e.deltaY) > 30) {
                 toggleSensors(e.deltaY > 0);
                 lastScrollTime = now;
