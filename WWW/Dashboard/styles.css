@@ -216,242 +216,321 @@ body::before {
     bottom: 2rem;
     left: 50%;
     transform: translateX(-50%);
-    width: 90%;
-    max-width: 1200px;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 1rem;
-    padding: 0 1rem 2rem 1rem; /* Añadido padding-bottom de 2rem */
     z-index: 1500;
 
 }
 
-/* Widget Base */
-.widget {
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 16px;
-    padding: 1.5rem;
-    min-height: 120px;
-    display: flex;
-    flex-direction: column;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    transform-origin: center bottom;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-}
+        .mini-widget {
+            width: 400px;
+            height: 200px;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
 
-.widget::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: radial-gradient(circle at center, rgba(255,255,255,0.1) 0%, transparent 70%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
+        .mini-widget:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.35);
+        }
 
-.widget:hover {
-    transform: translateY(-4px) scale(1.02);
-    box-shadow: 
-        0 12px 24px -1px rgba(0, 0, 0, 0.15),
-        0 4px 8px -1px rgba(0, 0, 0, 0.08),
-        inset 0 0 0 1px rgba(255, 255, 255, 0.25);
-}
+        .widget-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 1rem;
+        }
 
-.widget:hover::before {
-    opacity: 1;
-}
+        .widget-icon {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.3);
+        }
 
-.widget:active {
-    transform: translateY(-2px) scale(0.98);
-    transition-duration: 0.1s;
-}
+        .widget-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
 
-/* Widget Layout */
-.widget-content {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: center;
-    gap: 1rem;
-    height: 100%;
-    position: relative;
-    z-index: 1;
-}
+        .widget-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
 
-.widget-header {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 0.5rem;
+        }
 
-.widget-icon {
-    width: 60px;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 16px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    margin-left: auto;
-}
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
 
-.widget-icon svg {
-    width: 40px;
-    height: 40px;
-    transition: transform 0.3s ease;
-}
+        .status-text {
+            font-size: 0.9rem;
+            color: #5a7089;
+        }
 
-.widget-label {
-    font-size: 1.1rem;
-    font-weight: 500;
-    margin-bottom: 0.5rem;
-}
+        .notification-count {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+            text-align: center;
+            margin: 0.5rem 0;
+        }
 
-.widget-status {
-    font-size: 1.25rem;
-    font-weight: 600;
-}
+        .security-status {
+            font-size: 1.2rem;
+            font-weight: 600;
+            text-align: center;
+            padding: 0.5rem;
+            border-radius: 12px;
+            margin: 0.5rem 0;
+        }
 
-/* Animación para los iconos */
-.widget-icon {
-    transition: transform 0.3s ease;
-}
+        .notifications-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.856);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
 
-.widget:hover .widget-icon {
-    transform: scale(1.1);
-}
+        .notifications-modal.active {
+            display: flex;
+            opacity: 1;
+        }
 
-/* Animación para el texto */
-.widget-label, 
-.widget-status {
-    transition: transform 0.3s ease, color 0.3s ease;
-}
+        .modal-content {
+            background: rgba(255, 255, 255, 0.705);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 600px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
 
-.widget:hover .widget-label {
-    transform: translateY(-2px);
-    color: rgba(0, 0, 0, 0.9);
-}
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
 
-.widget:hover .widget-status {
-    transform: translateY(-1px);
-    color: rgba(0, 0, 0, 0.8);
-}
+        .close-modal {
+            background: transparent;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
 
-/* Efectos específicos por widget */
-.status-widget:hover {
-    background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(255, 255, 255, 0.2));
-}
+        .notifications-container {
+            max-height: 400px;
+            overflow-y: auto;
+        }
 
-.alert-widget:hover {
-    background: linear-gradient(135deg, rgba(255, 152, 0, 0.1), rgba(255, 255, 255, 0.2));
-}
+        .notification-card {
+            background: rgba(161, 161, 161, 0.15);
+            backdrop-filter: blur(12px);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
 
-.health-widget:hover {
-    background: linear-gradient(135deg, rgba(255, 68, 68, 0.1), rgba(255, 255, 255, 0.2));
-}
+        .notification-card:hover {
+            transform: translateX(5px);
+        }
 
-/* Animación al cargar la página */
-@keyframes widgetAppear {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
 
-.widgets-container {
-    perspective: 1000px;
-}
+        .notification-title {
+            font-weight: 600;
+            color: #2c3e50;
+        }
 
-.widget {
-    animation: widgetAppear 0.5s cubic-bezier(0.4, 0, 0.2, 1) both;
-}
+        .notification-time {
+            font-size: 0.8rem;
+            color: #7f8c8d;
+        }
 
-.widget:nth-child(1) { animation-delay: 0.1s; }
-.widget:nth-child(2) { animation-delay: 0.2s; }
-.widget:nth-child(3) { animation-delay: 0.3s; }
+        .notification-body {
+            font-size: 0.9rem;
+            color: #34495e;
+            margin-bottom: 0.5rem;
+        }
 
-/* Mejoras en la interactividad */
-.widget-content {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: center;
-    gap: 1rem;
-    height: 100%;
-    position: relative;
-    z-index: 1;
-}
+        .notification-footer {
+            display: flex;
+            justify-content: flex-end;
+        }
 
-/* Efecto de pulso para alertas */
-@keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.02); }
-    100% { transform: scale(1); }
-}
+        .notification-category {
+            font-size: 0.8rem;
+            color: #16a085;
+            background: rgba(22, 160, 133, 0.1);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+        }
 
-.alert-widget[data-alerts]:not([data-alerts="0"]) {
-    animation: pulse 2s infinite;
-}
+        .security-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+                    background: rgba(255, 255, 255, 0.856);
+            backdrop-filter: blur(8px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
 
-/* Soporte para modo reducido de movimiento */
-@media (prefers-reduced-motion: reduce) {
-    .widget {
-        animation: none !important;
-        transition: none !important;
-    }
-    
-    .widget:hover {
-        transform: none;
-    }
-    
-    .widget-icon,
-    .widget-label,
-    .widget-status {
-        transition: none !important;
-    }
-    
-    .alert-widget[data-alerts]:not([data-alerts="0"]) {
-        animation: none;
-    }
-}
+        .security-modal.active {
+            display: flex;
+            opacity: 1;
+        }
 
-/* Status colors */
-.status-widget .dot-face { color: #4CAF50; }
-.alert-widget .alarm-icon { color: #FF9800; }
-.health-widget .dot-heart { color: #FF4444; }
+        .security-content {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 2rem;
+            width: 900px;
+            max-width: 90%;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
 
-/* Icon containers */
-.widget .dot-face,
-.widget .dot-heart,
-.widget .alarm-icon {
-    position: absolute;
-    left: 20px;
-    width: 30px;
-    height: 30px;
-}
+        .security-modal.active .security-content {
+            transform: translateY(0);
+        }
 
-/* Text alignment */
-.widget .widget-text {
-    width: 100%;
-    position: absolute;
-    left: 8;
-    text-align: right;
-    font-size: clamp(1rem, 3vw, 1.2rem);
-    color: rgba(26, 26, 26, 0.9);
-    font-weight: 500;
-    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.1);
-}
+        .security-modal-content {
+            display: flex;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
 
+        .security-info {
+            flex: 1;
+        }
+
+        .security-status-large {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 1.2rem;
+            color: #10B981;
+            margin-bottom: 2rem;
+        }
+
+        .status-icon {
+            font-size: 2rem;
+        }
+
+        .security-details {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .security-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(12px);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .security-item:hover {
+            transform: translateX(5px);
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .security-item i {
+            font-size: 1.5rem;
+            color: #10B981;
+        }
+
+        .security-item-info h3 {
+            margin: 0;
+            color: #2c3e50;
+            font-size: 1.1rem;
+        }
+
+        .security-item-info p {
+            margin: 0.5rem 0 0;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .security-camera-preview {
+            position: relative;
+            width: 400px;
+        }
+
+        .security-camera-preview img {
+            width: 100%;
+            height: auto;
+            border-radius: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .camera-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 0.5rem;
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
 /* Glass effect */
 .glass-effect {
     background: rgba(255, 255, 255, 0.2);
@@ -1032,20 +1111,6 @@ body::before {
     }
 }
 
-/* Add to your existing sensor styles */
-.Security-status {
-    position: relative;
-}
-
-.Security-status .status-dot {
-    position: absolute;
-    bottom: -2px;
-    right: -2px;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    transition: all 0.3s ease;
-}
 
 /* Add support for reduced motion */
 @media (prefers-reduced-motion: reduce) {
@@ -1088,77 +1153,316 @@ body::before {
     z-index: 1000;
 }
 
-.sensor-grid.visible {
-    display: grid !important;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.5rem;
-    opacity: 1;
+
+        .sensors-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2.5rem;
+            max-width: 1400px;
+            padding: 2rem;
+        }
+
+        .sensor-item {
+            position: relative;
+            width: 100%;
+            min-height: 280px;
+            padding: 2.5rem;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(12px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+        }
+
+        /* Hacer el widget de humedad redondo */
+        .sensor-item.humidity-sensor {
+            border-radius: 50%;
+            aspect-ratio: 1;
+            width: 280px;
+            margin: auto;
+        }
+
+        /* Widget de fuego ocupa 2 espacios */
+        .sensor-item.fire-sensor {
+            grid-column: span 2;
+            min-height: 300px;
+        }
+
+        /* Quitar animación de movimiento del punto de estado */
+        .alert {
+            animation: glowAlert 1.5s infinite;
+        }
+
+        @keyframes glowAlert {
+            0% { box-shadow: 0 8px 32px rgba(255, 68, 68, 0.15); }
+            50% { box-shadow: 0 8px 32px rgba(255, 68, 68, 0.3); }
+            100% { box-shadow: 0 8px 32px rgba(255, 68, 68, 0.15); }
+        }
+
+        /* Ajustar tamaños aleatorios */
+        .sensor-item:nth-child(odd) {
+            min-height: 320px;
+        }
+
+        .sensor-item:nth-child(3n) {
+            min-height: 340px;
+        }
+
+        .sensor-item:nth-child(4n) {
+            min-height: 300px;
+        }
+
+        .sensor-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .sensor-item:hover {
+            background: rgba(255, 255, 255, 0.25);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.25);
+        }
+
+        .sensor-item:hover::before {
+            opacity: 1;
+        }
+
+        .sensor-icon {
+            width: 70px;
+            height: 70px;
+            margin-bottom: 1.5rem;
+            transition: transform 0.3s ease;
+        }
+
+     
+
+        .sensor-icon svg {
+            width: 100%;
+            height: 100%;
+            fill: #2c3e50; /* Changed to black/dark color */
+        }
+
+        .sensor-label {
+            font-size: 1.1rem;
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 600;
+        }
+
+        .sensor-value {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #2c3e50; /* Changed to match icon color */
+            text-align: center;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .status-dot2 {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #4CAF50;
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .status-dot2.offline {
+            background-color: #FF4444;
+            box-shadow: 0 0 10px rgba(255, 68, 68, 0.5);
+        }
+
+        .alert {
+            animation: pulseAlert 1.5s infinite;
+        }
+
+        @keyframes pulseAlert {
+            0% { box-shadow: 0 8px 32px rgba(255, 68, 68, 0.15); }
+            50% { box-shadow: 0 8px 32px rgba(255, 68, 68, 0.3); }
+            100% { box-shadow: 0 8px 32px rgba(255, 68, 68, 0.15); }
+        }
+
+        /* Estilo para estado de peligro */
+.sensor-item.danger {
+    background: rgba(255, 68, 68, 0.15);
+    border-color: rgba(255, 68, 68, 0.3);
 }
 
-.sensor-item {
-    aspect-ratio: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 1.5rem;
-    border-radius: 16px;
-    transition: transform 0.3s ease;
-    text-align: center;
+.sensor-item.danger .sensor-value {
+    font-size: 2rem; /* Reducido de 3rem */
+    font-weight: 800;
+    color: #FF4444;
 }
 
-.sensor-item .sensor-icon {
-    width: 48px;
-    height: 48px;
-    margin-bottom: 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.sensor-item.danger .sensor-icon svg {
+    fill: #FF4444;
 }
 
-.sensor-item .sensor-label {
-    font-size: 0.9rem;
-    font-weight: 500;
-    margin-bottom: 0.5rem;
+/* Estilos para niveles de agua */
+.sensor-item.level-high {
+    background: rgba(76, 175, 80, 0.15);
+    border-color: rgba(76, 175, 80, 0.3);
 }
 
-.sensor-item .sensor-value {
-    font-size: 1.5rem;
-    font-weight: 600;
+.sensor-item.level-high .sensor-value {
+    color: #4CAF50;
 }
 
-/* Ajuste para tablets */
-@media (max-width: 992px) {
-    .sensor-grid.visible {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1rem;
+.sensor-item.level-medium {
+    background: rgba(255, 152, 0, 0.15);
+    border-color: rgba(255, 152, 0, 0.3);
+}
+
+.sensor-item.level-medium .sensor-value {
+    color: #FF9800;
+}
+
+.sensor-item.level-low {
+    background: rgba(255, 68, 68, 0.15);
+    border-color: rgba(255, 68, 68, 0.3);
+}
+
+.sensor-item.level-low .sensor-value {
+    color: #FF4444;
+}
+.sensor-item.level-empty .sensor-value {
+    color: #FF4444;
+}
+
+/* Media Queries */
+        @media (max-width: 768px) {
+            .sensor-grid {
+                padding: 1rem;
+                height: 100vh;
+            }
+
+            .sensors-content {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: 1rem;
+                padding: 1rem;
+                width: 100%;
+                align-content: center;
+            }
+
+            .sensor-item {
+                min-height: auto;
+                aspect-ratio: 1;
+                padding: 1rem;
+            }
+
+            .sensor-icon {
+                width: 40px;
+                height: 40px;
+                margin-bottom: 0.75rem;
+            }
+
+            .sensor-label {
+                font-size: 0.8rem;
+                margin-bottom: 0.5rem;
+            }
+
+            .sensor-value {
+                font-size: 1.5rem;
+            }
+
+            /* Ajustar widgets especiales */
+            .sensor-item.fire-sensor {
+                grid-column: span 1;
+                aspect-ratio: 1;
+            }
+            
+            .sensor-item.humidity-sensor {
+                width: 100%;
+                aspect-ratio: 1;
+            }
+
+            /* Estados de alerta más compactos */
+            .sensor-item.danger .sensor-value,
+            .sensor-item.level-high .sensor-value,
+            .sensor-item.level-medium .sensor-value,
+            .sensor-item.level-low .sensor-value,
+            .sensor-item.level-empty .sensor-value {
+                font-size: 1.2rem;
+            }
+
+            /* Ajustar punto de estado */
+            .status-dot2 {
+                width: 8px;
+                height: 8px;
+                top: 1rem;
+                right: 1rem;
+            }
+
+            /* Eliminar alturas aleatorias en móvil */
+            .sensor-item:nth-child(odd),
+            .sensor-item:nth-child(3n),
+            .sensor-item:nth-child(4n) {
+                min-height: auto;
+            }
+
+            /* Hacer más pequeño el texto de estado para gas y fuego */
+    .sensor-item.danger .sensor-value {
+        font-size: 0.9rem;
+        letter-spacing: 0.5px;
     }
-}
 
-/* Ajuste para móviles */
-@media (max-width: 576px) {
-    .sensor-grid.visible {
-        grid-template-columns: 1fr;
-        gap: 0.875rem;
+    /* Ajustar todos los estados de sensores */
+    .sensor-value {
+        font-size: 1.2rem;
     }
-    
-    .sensor-item {
-        aspect-ratio: auto;
-        padding: 1rem;
-    }
-}
+        }
 
-/* Mejoras para la orientación landscape */
-@media (orientation: landscape) and (max-height: 500px) {
-    .sensor-grid {
-        grid-template-columns: repeat(4, 1fr);
-        margin-top: 50px;
+        /* Ajustes adicionales para pantallas muy pequeñas */
+        @media (max-width: 480px) {
+            .sensor-grid {
+                padding: 0.75rem;
+            }
+
+            .sensors-content {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.75rem;
+                padding: 0.75rem;
+            }
+
+            .sensor-item.danger .sensor-value {
+        font-size: 0.8rem;
+        letter-spacing: 0;
     }
 
-    .sensor-item {
-        min-height: 80px;
+    .sensor-value {
+        font-size: 1rem;
     }
-}
+        }
+
+        /* Ajustes para orientación landscape en móviles */
+        @media (max-height: 480px) and (orientation: landscape) {
+            .sensor-grid {
+                padding: 0.5rem;
+            }
+
+            .sensors-content {
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+                max-height: 100vh;
+                overflow-y: auto;
+                padding: 0.5rem;
+            }
+        }
 
 .third-panel {
     display: none;

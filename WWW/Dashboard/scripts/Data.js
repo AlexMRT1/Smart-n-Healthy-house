@@ -255,84 +255,56 @@ class DeviceDataManager {
             this.handleFirstMessage();
         }
 
-        if (data.temperature !== undefined) {
-            const tempValue = parseFloat(data.temperature);
-            if (!isNaN(tempValue)) {
-                this.currentStates.temperature = tempValue;
-                if (this.elements.temperature) {
-                    this.elements.temperature.textContent = `${tempValue}°`;
-                    this.elements.temperature.style.color = '#1a1a1a';
+        // Mapeo de claves de datos a data-sensor
+        const sensorMap = {
+            temperature: { key: 'temperature', suffix: '°' },
+            humidity: { key: 'humidity', suffix: '%' },
+            gas: { key: 'gas', custom: v => v === true || v === "Detectada" ? "Detectada" : "No detectada" },
+            fire: { key: 'fire', custom: v => v === true || v === "Detectado" ? "Detectado" : "No detectado" },
+            water: { key: 'water', suffix: '%' },
+            camera: { key: 'camera' },
+            security: { key: 'security' }
+        };
+
+        Object.entries(sensorMap).forEach(([sensor, config]) => {
+            const el = document.querySelector(`.sensor-value[data-sensor="${sensor}"]`);
+            let value = data[config.key];
+            if (el !== null && value !== undefined) {
+                if (config.custom) {
+                    el.textContent = config.custom(value);
+                } else if (config.suffix) {
+                    el.textContent = `${value}${config.suffix}`;
+                } else {
+                    el.textContent = value;
                 }
             }
-        }
+        });
 
-        if (data.humidity !== undefined || data.humedad !== undefined) {
-            const humValue = parseFloat(data.humidity || data.humedad);
-            if (!isNaN(humValue)) {
-                this.currentStates.humidity = humValue;
-                const humidityElement = document.querySelector('[data-sensor="humidity"]');
-                if (humidityElement) {
-                    humidityElement.textContent = `${humValue}%`;
-                    humidityElement.style.color = '#1a1a1a';
-                }
-            }
-        }
-
+        // Room name
         const roomNameElement = document.querySelector('.room-name');
         if (roomNameElement) {
             roomNameElement.textContent = data.deviceName || "Smart'n healthy House Test model";
-            roomNameElement.style.color = '#1a1a1a';
         }
 
-        // Actualizar indicador de gas
-        const gasValue = document.querySelector('.sensor-value[data-sensor="gas"]');
-        if (gasValue) {
-            gasValue.textContent = data.gas === true ? "Detectada" : "No detectada";
-            if (data.gas === true) {
-                gasValue.classList.add('alert');
-            } else {
-                gasValue.classList.remove('alert');
-            }
-        }
-
-        // Actualizar indicador de fuego
-        const fireValue = document.querySelector('.sensor-value[data-sensor="fire"]');
-        if (fireValue) {
-            fireValue.textContent = data.fire === true ? "Detectado" : "No detectado";
-            if (data.fire === true) {
-                fireValue.classList.add('alert');
-            } else {
-                fireValue.classList.remove('alert');
-            }
-        }
-
-        // Manejar alerta de fuego
+        // Fuego: overlay y temperatura especial
         const fireAlertOverlay = document.querySelector('.fire-alert-overlay');
         const temperatureDisplay = document.querySelector('.temperature');
-        
-        if (data.fire === true) {
-            if (fireAlertOverlay) {
-                fireAlertOverlay.style.display = 'block';
-            }
+        if (data.fire === true || data.fire === "Detectado") {
+            if (fireAlertOverlay) fireAlertOverlay.style.display = 'block';
             if (temperatureDisplay) {
                 temperatureDisplay.classList.add('fire-alert');
                 temperatureDisplay.textContent = 'Fuego detectado';
             }
         } else {
-            if (fireAlertOverlay) {
-                fireAlertOverlay.style.display = 'none';
-            }
-            if (temperatureDisplay) {
+            if (fireAlertOverlay) fireAlertOverlay.style.display = 'none';
+            if (temperatureDisplay && data.temperature !== undefined) {
                 temperatureDisplay.classList.remove('fire-alert');
-                if (data.temperature !== undefined) {
-                    const tempValue = parseFloat(data.temperature);
-                    if (!isNaN(tempValue)) {
-                        temperatureDisplay.textContent = `${tempValue}°`;
-                    }
-                }
+                temperatureDisplay.textContent = `${data.temperature}°`;
             }
         }
 
+        // Actualiza estados internos y widgets si es necesario
+        this.updateStates(data);
         this.updateSensorDisplays();
     }
 

@@ -13,35 +13,26 @@
         }
 
         body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            margin: 0;
+            padding: 1rem;
             min-height: 100vh;
             background-color: #f0f8ff;
-            gap: 2rem;
+            display: grid;
+            place-items: center;
         }
 
-        .weather-widget {
+        .weather-widget,
+        .wind-widget,
+        .precipitation-widget,
+        .weather-condition-widget,
+        .visibility-widget,
+        .air-quality-widget,
+        .uv-widget {
+            width: 100%;
+            height: auto;
+            min-height: 200px;
+            padding: 1.5rem;
             position: relative;
-            width: 400px;
-            height: 300px;
-            padding: 2rem;
-            background: rgba(255, 255, 255, 0.35);
-            backdrop-filter: blur(15px);
-            border-radius: 30px;
-            border: 2px solid rgba(255, 255, 255, 0.5);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .wind-widget {
-            position: relative;
-            width: 800px;
-            height: 300px;
-            padding: 2rem;
             background: rgba(255, 255, 255, 0.35);
             backdrop-filter: blur(15px);
             border-radius: 30px;
@@ -55,7 +46,7 @@
 
         .title {
             font-family: 'Arial', sans-serif;
-            font-size: 1.5rem;
+            font-size: clamp(1rem, 2vw, 1.5rem);
             color: #5a7089;
             text-align: center;
             margin-bottom: 1rem;
@@ -64,9 +55,13 @@
             text-transform: uppercase;
         }
 
-        .temperature, .wind-speed {
+        .temperature, 
+        .wind-speed,
+        .precipitation-chance,
+        .visibility-value,
+        .uv-value {
             font-family: 'Arial', sans-serif;
-            font-size: 7rem;
+            font-size: clamp(3rem, 5vw, 7rem);
             font-weight: bold;
             color: #2c3e50;
             text-align: center;
@@ -124,8 +119,9 @@
         }
 
         .widget-row {
-            display: flex;
-            gap: 2rem;
+            display: grid;
+            gap: 1rem;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             justify-content: center;
             align-items: flex-start;
         }
@@ -137,10 +133,11 @@
         }
 
         .widget-column {
-            display: flex;
-            flex-direction: column;
-            gap: 2rem;
-            align-items: center;
+            display: grid;
+            gap: 1rem;
+            width: 100%;
+            height: 100vh;
+            max-width: 1600px;
         }
 
         .yellow {
@@ -351,6 +348,42 @@
             }
         }
 
+        @media (max-width: 1200px) {
+            .widget-row {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 0.5rem;
+            }
+            
+            .widget-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .weather-condition-widget {
+                aspect-ratio: 1;
+            }
+        }
+
+        @media (max-height: 800px) {
+            .widget-column {
+                gap: 0.5rem;
+            }
+            
+            .weather-widget,
+            .wind-widget,
+            .precipitation-widget,
+            .weather-condition-widget,
+            .visibility-widget,
+            .air-quality-widget,
+            .uv-widget {
+                min-height: 150px;
+                padding: 1rem;
+            }
+        }
     </style>
 </head>
 <body>

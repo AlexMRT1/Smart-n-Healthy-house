@@ -1,0 +1,516 @@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <div class="bottom-widgets-container">
+        <!-- Widget Estado General -->
+        <div class="mini-widget">
+            <div class="widget-header">
+                <div class="widget-icon">
+                    <i class="fas fa-home"></i>
+                </div>
+                <div class="widget-title">Estado General</div>
+            </div>
+            <div class="widget-content">
+                <div>
+                    <div class="status-indicator">
+                        <span class="status-dot" style="background: #10B981;"></span>
+                        <span class="status-text">Sistemas funcionando</span>
+                    </div>
+                    <div class="status-indicator">
+                        <span class="status-dot" style="background: #10B981;"></span>
+                        <span class="status-text">Conexión estable</span>
+                    </div>
+                    <div class="status-indicator">
+                        <span class="status-dot" style="background: #10B981;"></span>
+                        <span class="status-text">Energía normal</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Widget Notificaciones -->
+        <div class="mini-widget">
+            <div class="widget-header">
+                <div class="widget-icon">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <div class="widget-title">Notificaciones</div>
+            </div>
+            <div class="widget-content">
+                <div class="notification-count">3</div>
+                <div class="status-text" style="text-align: center;">Notificaciones pendientes</div>
+            </div>
+        </div>
+
+        <!-- Widget Seguridad -->
+        <div class="mini-widget">
+            <div class="widget-header">
+                <div class="widget-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="widget-title">Seguridad</div>
+            </div>
+            <div class="widget-content">
+                <div class="security-status" style="background: rgba(16, 185, 129, 0.1); color: #10B981;">
+                    Protegido
+                </div>
+                <div class="status-indicator">
+                    <span class="status-dot" style="background: #10B981;"></span>
+                    <span class="status-text">Cámaras activas</span>
+                </div>
+                <div class="status-indicator">
+                    <span class="status-dot" style="background: #10B981;"></span>
+                    <span class="status-text">Reconocimiento facial activo</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="notifications-modal" id="notificationsModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Notificaciones</h2>
+            <button class="close-modal"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="notifications-container">
+            <div class="notification-card">
+                <div class="notification-header">
+                    <span class="notification-title">Alerta de Seguridad</span>
+                    <span class="notification-time">Hace 5 min</span>
+                </div>
+                <div class="notification-body">
+                    Se detectó movimiento en la cámara del jardín.
+                </div>
+                <div class="notification-footer">
+                    <span class="notification-category">Seguridad</span>
+                </div>
+            </div>
+
+            <div class="notification-card">
+                <div class="notification-header">
+                    <span class="notification-title">Consumo de Energía</span>
+                    <span class="notification-time">Hace 30 min</span>
+                </div>
+                <div class="notification-body">
+                    El consumo de energía ha superado el límite diario establecido.
+                </div>
+                <div class="notification-footer">
+                    <span class="notification-category">Energía</span>
+                </div>
+            </div>
+
+            <div class="notification-card">
+                <div class="notification-header">
+                    <span class="notification-title">Mantenimiento</span>
+                    <span class="notification-time">Hace 2 horas</span>
+                </div>
+                <div class="notification-body">
+                    Es momento de cambiar el filtro del aire acondicionado.
+                </div>
+                <div class="notification-footer">
+                    <span class="notification-category">Mantenimiento</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="security-modal" id="securityModal">
+    <div class="modal-content security-content">
+        <div class="modal-header">
+            <h2><i class="fas fa-shield-alt"></i> Control de Seguridad</h2>
+            <button class="close-modal"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="security-modal-content">
+            <div class="security-info">
+                <div class="security-status-large">
+                    <div class="status-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <span>Sistema Activo y Protegido</span>
+                </div>
+                
+                <div class="security-details">
+                    <div class="security-item">
+                        <i class="fas fa-video"></i>
+                        <div class="security-item-info">
+                            <h3>Cámaras</h3>
+                            <p>2 cámaras activas • Última revisión: <span> hace 1 min</span></p>
+                        </div>
+                    </div>
+                    
+                    <div class="security-item">
+                        <i class="fa-solid fa-face-smile"></i>
+                        <div class="security-item-info">
+                            <h3>Reconocimiento facial</h3>
+                            <p>Activado • Sin incidencias en las últimas 24h</p>
+                        </div>
+                    </div>
+                    
+                    <div class="security-item">
+                        <i class="fa-solid fa-fingerprint"></i>
+                        <div class="security-item-info">
+                            <h3>Acceso por huella dactilar</h3>
+                            <p>Activo • 2 accesos hoy</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="security-camera-preview">
+                <img src="https://placehold.co/400x400" alt="Vista previa de cámara">
+                <div>Ultimo Sospechoso detectado</div>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+      .bottom-widgets-container {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 1000;
+        }
+
+        .mini-widget {
+            width: 400px;
+            height: 180px;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .mini-widget:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.35);
+        }
+
+        .widget-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 1rem;
+        }
+
+        .widget-icon {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .widget-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .widget-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 0.5rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .status-text {
+            font-size: 0.9rem;
+            color: #5a7089;
+        }
+
+        .notification-count {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+            text-align: center;
+            margin: 0.5rem 0;
+        }
+
+        .security-status {
+            font-size: 1.2rem;
+            font-weight: 600;
+            text-align: center;
+            padding: 0.5rem;
+            border-radius: 12px;
+            margin: 0.5rem 0;
+        }
+
+        .notifications-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.856);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .notifications-modal.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: rgba(255, 255, 255, 0.705);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 600px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .close-modal {
+            background: transparent;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .notifications-container {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .notification-card {
+            background: rgba(161, 161, 161, 0.15);
+            backdrop-filter: blur(12px);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .notification-card:hover {
+            transform: translateX(5px);
+        }
+
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .notification-title {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .notification-time {
+            font-size: 0.8rem;
+            color: #7f8c8d;
+        }
+
+        .notification-body {
+            font-size: 0.9rem;
+            color: #34495e;
+            margin-bottom: 0.5rem;
+        }
+
+        .notification-footer {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .notification-category {
+            font-size: 0.8rem;
+            color: #16a085;
+            background: rgba(22, 160, 133, 0.1);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+        }
+
+        .security-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+                    background: rgba(255, 255, 255, 0.856);
+            backdrop-filter: blur(8px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .security-modal.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .security-content {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 2rem;
+            width: 900px;
+            max-width: 90%;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+
+        .security-modal.active .security-content {
+            transform: translateY(0);
+        }
+
+        .security-modal-content {
+            display: flex;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+
+        .security-info {
+            flex: 1;
+        }
+
+        .security-status-large {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 1.2rem;
+            color: #10B981;
+            margin-bottom: 2rem;
+        }
+
+        .status-icon {
+            font-size: 2rem;
+        }
+
+        .security-details {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .security-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(12px);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .security-item:hover {
+            transform: translateX(5px);
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .security-item i {
+            font-size: 1.5rem;
+            color: #10B981;
+        }
+
+        .security-item-info h3 {
+            margin: 0;
+            color: #2c3e50;
+            font-size: 1.1rem;
+        }
+
+        .security-item-info p {
+            margin: 0.5rem 0 0;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .security-camera-preview {
+            position: relative;
+            width: 400px;
+        }
+
+        .security-camera-preview img {
+            width: 100%;
+            height: auto;
+            border-radius: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .camera-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 0.5rem;
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+</style>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Selección de elementos
+    const notificationWidget = document.querySelector('.mini-widget:nth-child(2)');
+    const notificationsModal = document.getElementById('notificationsModal');
+    const securityWidget = document.querySelector('.mini-widget:nth-child(3)');
+    const securityModal = document.getElementById('securityModal');
+    
+    // Funciones auxiliares
+    function openModal(modal) {
+        modal.style.display = 'flex';
+        setTimeout(() => modal.classList.add('active'), 10);
+    }
+
+    function closeModal(modal) {
+        modal.classList.remove('active');
+        setTimeout(() => modal.style.display = 'none', 300);
+    }
+
+    // Event Listeners para notificaciones
+    notificationWidget.addEventListener('click', () => openModal(notificationsModal));
+    notificationsModal.querySelector('.close-modal').addEventListener('click', () => closeModal(notificationsModal));
+    notificationsModal.addEventListener('click', (e) => {
+        if (e.target === notificationsModal) closeModal(notificationsModal);
+    });
+
+    // Event Listeners para seguridad
+    securityWidget.addEventListener('click', () => openModal(securityModal));
+    securityModal.querySelector('.close-modal').addEventListener('click', () => closeModal(securityModal));
+    securityModal.addEventListener('click', (e) => {
+        if (e.target === securityModal) closeModal(securityModal);
+    });
+});
+</script>
