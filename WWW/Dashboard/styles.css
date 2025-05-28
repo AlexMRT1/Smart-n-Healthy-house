@@ -1140,26 +1140,23 @@ body::before {
 
 /* Sensor Grid Styles */
 .sensor-grid {
-    display: none;
-    opacity: 0;
-    width: 90%;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 1rem;
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 1200px;
+    display: none;
+    opacity: 0;
     z-index: 1000;
 }
 
 
         .sensors-content {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2.5rem;
-            max-width: 1400px;
-            padding: 2rem;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            padding: 1rem;
         }
 
         .sensor-item {
@@ -1352,117 +1349,36 @@ body::before {
                 height: 100vh;
             }
 
-            .sensors-content {
-                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-                gap: 1rem;
-                padding: 1rem;
-                width: 100%;
-                align-content: center;
-            }
-
-            .sensor-item {
-                min-height: auto;
-                aspect-ratio: 1;
-                padding: 1rem;
-            }
-
-            .sensor-icon {
-                width: 40px;
-                height: 40px;
-                margin-bottom: 0.75rem;
-            }
-
-            .sensor-label {
-                font-size: 0.8rem;
-                margin-bottom: 0.5rem;
-            }
-
-            .sensor-value {
-                font-size: 1.5rem;
-            }
-
-            /* Ajustar widgets especiales */
-            .sensor-item.fire-sensor {
-                grid-column: span 1;
-                aspect-ratio: 1;
-            }
-            
-            .sensor-item.humidity-sensor {
-                width: 100%;
-                aspect-ratio: 1;
-            }
-
-            /* Estados de alerta más compactos */
-            .sensor-item.danger .sensor-value,
-            .sensor-item.level-high .sensor-value,
-            .sensor-item.level-medium .sensor-value,
-            .sensor-item.level-low .sensor-value,
-            .sensor-item.level-empty .sensor-value {
-                font-size: 1.2rem;
-            }
-
-            /* Ajustar punto de estado */
-            .status-dot2 {
-                width: 8px;
-                height: 8px;
-                top: 1rem;
-                right: 1rem;
-            }
-
-            /* Eliminar alturas aleatorias en móvil */
-            .sensor-item:nth-child(odd),
-            .sensor-item:nth-child(3n),
-            .sensor-item:nth-child(4n) {
-                min-height: auto;
-            }
-
-            /* Hacer más pequeño el texto de estado para gas y fuego */
-    .sensor-item.danger .sensor-value {
-        font-size: 0.9rem;
-        letter-spacing: 0.5px;
+    .sensors-content {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
     }
 
-    /* Ajustar todos los estados de sensores */
-    .sensor-value {
-        font-size: 1.2rem;
-    }
-        }
-
-        /* Ajustes adicionales para pantallas muy pequeñas */
-        @media (max-width: 480px) {
-            .sensor-grid {
-                padding: 0.75rem;
-            }
-
-            .sensors-content {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 0.75rem;
-                padding: 0.75rem;
-            }
-
-            .sensor-item.danger .sensor-value {
-        font-size: 0.8rem;
-        letter-spacing: 0;
+    .sensor-item {
+        min-height: 120px;
+        padding: 1rem;
     }
 
-    .sensor-value {
-        font-size: 1rem;
+    .third-panel {
+        transform: translate(-50%, -50%) scale(0.9);
     }
-        }
+}
 
-        /* Ajustes para orientación landscape en móviles */
-        @media (max-height: 480px) and (orientation: landscape) {
-            .sensor-grid {
-                padding: 0.5rem;
-            }
+@media screen and (max-height: 600px) {
+    .sensor-grid {
+        transform: translate(-50%, -50%) scale(0.8);
+    }
 
-            .sensors-content {
-                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-                max-height: 100vh;
-                overflow-y: auto;
-                padding: 0.5rem;
-            }
-        }
+    .sensors-content {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 0.8rem;
+    }
+
+    .sensor-item {
+        min-height: 100px;
+        padding: 0.8rem;
+    }
+}
 
 .third-panel {
     display: none;

@@ -1,3 +1,13 @@
+// Declare shared state variables once at the top
+const state = {
+    isGridVisible: false,
+    isThirdPanelVisible: false,
+    lastScrollTime: 0,
+    scrollTimeout: null,
+    isTouching: false,
+    touchStartY: null
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     const welcomeToast = document.querySelector('.welcome-toast');
     const errorToast = document.querySelector('.error-toast');
@@ -359,6 +369,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Variable para controlar el estado
     let isGridVisible = false;
     let isThirdPanelVisible = false;
+    let lastScrollTime = 0;
+    let scrollTimeout;
+    let isTouching = false;
 
     // Actualizar la hora cada segundo
     function updateClock() {
@@ -375,311 +388,117 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('DOMContentLoaded', () => {
         updateClock();
         setInterval(updateClock, 1000);
-        
-        // Modificar la función toggleView para manejar los tres paneles
-        const toggleView = (direction) => {
-            const roomTemp = document.querySelector('.room-temp-container');
-            const widgets = document.querySelector('.widgets-container');
-            const sensorGrid = document.querySelector('.sensor-grid');
-            const thirdPanel = document.querySelector('.third-panel');
-            
-            if (direction === 'down') {
-                if (!isGridVisible && !isThirdPanelVisible) {
-                    // Primera vista a segunda vista
-                    gsap.to([roomTemp, widgets], {
-                        opacity: 0,
-                        y: -20,
-                        duration: 0.3,
-                        onComplete: () => {
-                            roomTemp.style.display = 'none';
-                            widgets.style.display = 'none';
-                            sensorGrid.style.display = 'grid';
-                            sensorGrid.classList.add('visible');
-                            gsap.fromTo(sensorGrid, 
-                                { opacity: 0, y: 20 },
-                                { opacity: 1, y: 0, duration: 0.3 }
-                            );
-                        }
-                    });
-                    isGridVisible = true;
-                    isThirdPanelVisible = false;
-                } else if (isGridVisible && !isThirdPanelVisible) {
-                    // Segunda vista a tercera vista
-                    gsap.to(sensorGrid, {
-                        opacity: 0,
-                        y: -20,
-                        duration: 0.3,
-                        onComplete: () => {
-                            sensorGrid.style.display = 'none';
-                            sensorGrid.classList.remove('visible');
-                            thirdPanel.style.display = 'grid';
-                            thirdPanel.classList.add('visible');
-                            gsap.fromTo(thirdPanel,
-                                { opacity: 0, y: 20 },
-                                { opacity: 1, y: 0, duration: 0.3 }
-                            );
-                        }
-                    });
-                    isGridVisible = false;
-                    isThirdPanelVisible = true;
-                }
-            } else if (direction === 'up') {
-                if (isThirdPanelVisible) {
-                    // Tercera vista a segunda vista
-                    gsap.to(thirdPanel, {
-                        opacity: 0,
-                        y: -20,
-                        duration: 0.3,
-                        onComplete: () => {
-                            thirdPanel.style.display = 'none';
-                            thirdPanel.classList.remove('visible');
-                            sensorGrid.style.display = 'grid';
-                            sensorGrid.classList.add('visible');
-                            gsap.fromTo(sensorGrid,
-                                { opacity: 0, y: 20 },
-                                { opacity: 1, y: 0, duration: 0.3 }
-                            );
-                        }
-                    });
-                    isThirdPanelVisible = false;
-                    isGridVisible = true;
-                } else if (isGridVisible) {
-                    // Segunda vista a primera vista
-                    gsap.to(sensorGrid, {
-                        opacity: 0,
-                        y: -20,
-                        duration: 0.3,
-                        onComplete: () => {
-                            sensorGrid.style.display = 'none';
-                            sensorGrid.classList.remove('visible');
-                            roomTemp.style.display = 'flex';
-                            widgets.style.display = 'grid';
-                            gsap.fromTo([roomTemp, widgets],
-                                { opacity: 0, y: 20 },
-                                { opacity: 1, y: 0, duration: 0.3 }
-                            );
-                        }
-                    });
-                    isGridVisible = false;
-                    isThirdPanelVisible = false;
-                }
-            }
-        };
-
-        // Observer para scroll
-        const scrollObserver = Observer.create({
-            target: window,
-            type: "scroll,touch,pointer",
-            onChange: ({ velocityY }) => {
-                if (Math.abs(velocityY) > 50) {
-                    toggleView(velocityY > 0);
-                }
-            }
-        });
-
-        // Actualizar el manejador de eventos de scroll
-        window.addEventListener('wheel', (e) => {
-            clearTimeout(scrollTimeout);
-            const now = Date.now();
-            
-            if (now - lastScrollTime > 500) {
-                if (Math.abs(e.deltaY) > 30) {
-                    toggleView(e.deltaY > 0 ? 'down' : 'up');
-                    lastScrollTime = now;
-                }
-            }
-            
-            scrollTimeout = setTimeout(() => {
-                lastScrollTime = 0;
-            }, 500);
-        }, { passive: true });
-
-        // Actualizar el manejador de eventos táctiles
-        let touchStartY;
-        let touchEndY;
-
-        document.addEventListener('touchstart', (e) => {
-            touchStartY = e.touches[0].clientY;
-        }, { passive: true });
-
-        document.addEventListener('touchend', (e) => {
-            if (isTouching && touchStartY !== null) {
-                const touchEndY = e.changedTouches[0].clientY;
-                const diff = touchStartY - touchEndY;
-                
-                if (Math.abs(diff) > 50) {
-                    toggleView(diff > 0 ? 'down' : 'up');
-                }
-                
-                touchStartY = null;
-                isTouching = false;
-            }
-        }, { passive: true });
-
-        // Actualizar el manejador de teclas
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-                e.preventDefault();
-                toggleView(e.key === 'ArrowDown' ? 'down' : 'up');
-            }
-        });
     });
 
-    // Función para alternar la vista
-    const toggleView = (show) => {
-        const roomName = document.querySelector('.room-name');
-
-        if (show && !isGridVisible) {
-            gsap.to([roomTemp, widgets], {
-                opacity: 0,
-                y: -20,
-                duration: 0.3,
-                onComplete: () => {
-                    roomTemp.classList.add('hidden');
-                    widgets.classList.add('hidden');
-                    roomName.classList.add('centered');
-                    sensorGrid.classList.add('visible');
-                }
-            });
-            isGridVisible = true;
-        } else if (!show && isGridVisible) {
-            sensorGrid.classList.remove('visible');
-            setTimeout(() => {
-                roomTemp.classList.remove('hidden');
-                widgets.classList.remove('hidden');
-                roomName.classList.remove('centered');
-                gsap.to([roomTemp, widgets], {
-                    opacity: 1,
-                    y: 0,
-                    duration: 0.3
-                });
-            }, 300);
-            isGridVisible = false;
-        }
-    };
-
-    // Actualizar la función toggleSensors para mejor manejo de estados y animaciones
-    const toggleSensors = (show) => {
+    // Create a single toggleView function outside event listeners
+    const toggleView = (direction) => {
+        const roomTemp = document.querySelector('.room-temp-container');
+        const widgets = document.querySelector('.widgets-container');
+        const sensorGrid = document.querySelector('.sensor-grid');
         const thirdPanel = document.querySelector('.third-panel');
+        const roomName = document.querySelector('.room-name');
         
-        if (show && !isGridVisible && !isThirdPanelVisible) {
-            // Primera vista a segunda vista
-            gsap.to([roomTemp, widgets], {
-                opacity: 0,
-                duration: 0.3,
-                onComplete: () => {
-                    roomTemp.style.display = 'none';
-                    widgets.style.display = 'none';
-                    sensorGrid.style.display = 'grid';
-                    sensorGrid.classList.add('visible');
-                    
-                    gsap.to(sensorGrid, {
-                        opacity: 1,
-                        y: 0,
-                        duration: 0.3
-                    });
-                }
-            });
-            isGridVisible = true;
-            isThirdPanelVisible = false;
-            
-        } else if (show && isGridVisible && !isThirdPanelVisible) {
-            // Segunda vista a tercera vista
-            gsap.to(sensorGrid, {
-                opacity: 0,
-                y: -20,
-                duration: 0.3,
-                onComplete: () => {
-                    sensorGrid.style.display = 'none';
-                    sensorGrid.classList.remove('visible');
-                    thirdPanel.style.display = 'grid';
-                    thirdPanel.classList.add('visible');
-                    
-                    gsap.to(thirdPanel, {
-                        opacity: 1,
-                        y: 0,
-                        duration: 0.3
-                    });
-                }
-            });
-            isGridVisible = false;
-            isThirdPanelVisible = true;
-            
-        } else if (!show && isThirdPanelVisible) {
-            // Tercera vista a segunda vista
-            gsap.to(thirdPanel, {
-                opacity: 0,
-                y: 20,
-                duration: 0.3,
-                onComplete: () => {
-                    thirdPanel.style.display = 'none';
-                    thirdPanel.classList.remove('visible');
-                    sensorGrid.style.display = 'grid';
-                    sensorGrid.classList.add('visible');
-                    
-                    gsap.to(sensorGrid, {
-                        opacity: 1,
-                        y: 0,
-                        duration: 0.3
-                    });
-                }
-            });
-            isThirdPanelVisible = false;
-            isGridVisible = true;
-            
-        } else if (!show && isGridVisible) {
-            // Segunda vista a primera vista
-            gsap.to(sensorGrid, {
-                opacity: 0,
-                y: 20,
-                duration: 0.3,
-                onComplete: () => {
-                    sensorGrid.style.display = 'none';
-                    sensorGrid.classList.remove('visible');
-                    roomTemp.style.display = 'flex';
-                    widgets.style.display = 'grid';
-                    
-                    gsap.to([roomTemp, widgets], {
-                        opacity: 1,
-                        y: 0,
-                        duration: 0.3
-                    });
-                }
-            });
-            isGridVisible = false;
-            isThirdPanelVisible = false;
+        if (direction === 'down') {
+            if (!state.isGridVisible && !state.isThirdPanelVisible) {
+                // Primera vista a segunda vista
+                gsap.to([roomTemp, widgets], {
+                    opacity: 0,
+                    y: -20,
+                    duration: 0.3,
+                    onComplete: () => {
+                        roomTemp.style.display = 'none';
+                        widgets.style.display = 'none';
+                        sensorGrid.style.display = 'grid';
+                        roomName.classList.add('centered');
+                        sensorGrid.classList.add('visible');
+                        gsap.fromTo(sensorGrid, 
+                            { opacity: 0, y: 20 },
+                            { opacity: 1, y: 0, duration: 0.3 }
+                        );
+                    }
+                });
+                state.isGridVisible = true;
+                state.isThirdPanelVisible = false;
+            } else if (state.isGridVisible && !state.isThirdPanelVisible) {
+                // Segunda vista a tercera vista
+                gsap.to(sensorGrid, {
+                    opacity: 0,
+                    y: -20,
+                    duration: 0.3,
+                    onComplete: () => {
+                        sensorGrid.style.display = 'none';
+                        thirdPanel.style.display = 'grid';
+                        gsap.fromTo(thirdPanel,
+                            { opacity: 0, y: 20 },
+                            { opacity: 1, y: 0, duration: 0.3 }
+                        );
+                    }
+                });
+                state.isGridVisible = false;
+                state.isThirdPanelVisible = true;
+            }
+        } else if (direction === 'up') {
+            if (state.isThirdPanelVisible) {
+                // Tercera vista a segunda vista
+                gsap.to(thirdPanel, {
+                    opacity: 0,
+                    y: 20,
+                    duration: 0.3,
+                    onComplete: () => {
+                        thirdPanel.style.display = 'none';
+                        sensorGrid.style.display = 'grid';
+                        gsap.fromTo(sensorGrid,
+                            { opacity: 0, y: -20 },
+                            { opacity: 1, y: 0, duration: 0.3 }
+                        );
+                    }
+                });
+                state.isThirdPanelVisible = false;
+                state.isGridVisible = true;
+            } else if (state.isGridVisible) {
+                // Segunda vista a primera vista
+                gsap.to(sensorGrid, {
+                    opacity: 0,
+                    y: 20,
+                    duration: 0.3,
+                    onComplete: () => {
+                        sensorGrid.style.display = 'none';
+                        sensorGrid.classList.remove('visible');
+                        roomTemp.style.display = 'flex';
+                        widgets.style.display = 'grid';
+                        roomName.classList.remove('centered');
+                        gsap.fromTo([roomTemp, widgets],
+                            { opacity: 0, y: -20 },
+                            { opacity: 1, y: 0, duration: 0.3 }
+                        );
+                    }
+                });
+                state.isGridVisible = false;
+                state.isThirdPanelVisible = false;
+            }
         }
     };
 
-    // Mejorar la detección del scroll
-    let lastScrollTime = Date.now();
-    let scrollTimeout;
-
+    // Event listeners using the shared toggleView function
     window.addEventListener('wheel', (e) => {
-        clearTimeout(scrollTimeout);
+        clearTimeout(state.scrollTimeout);
         const now = Date.now();
         
-        if (now - lastScrollTime > 500) {
+        if (now - state.lastScrollTime > 500) {
             if (Math.abs(e.deltaY) > 30) {
-                toggleSensors(e.deltaY > 0);
-                lastScrollTime = now;
+                toggleView(e.deltaY > 0 ? 'down' : 'up');
+                state.lastScrollTime = now;
             }
         }
         
-        scrollTimeout = setTimeout(() => {
-            lastScrollTime = 0;
+        state.scrollTimeout = setTimeout(() => {
+            state.lastScrollTime = 0;
         }, 500);
     }, { passive: true });
 
-    // Mejorar el manejo táctil
-    let touchStartY;
-    let isTouching = false;
-
+    // Actualizar el manejador de eventos táctiles
     document.addEventListener('touchstart', (e) => {
-        if (!isTouching) {
-            touchStartY = e.touches[0].clientY;
-            isTouching = true;
-        }
+        touchStartY = e.touches[0].clientY;
     }, { passive: true });
 
     document.addEventListener('touchend', (e) => {
@@ -688,7 +507,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const diff = touchStartY - touchEndY;
             
             if (Math.abs(diff) > 50) {
-                toggleSensors(diff > 0);
+                toggleView(diff > 0 ? 'down' : 'up');
             }
             
             touchStartY = null;
@@ -696,25 +515,157 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, { passive: true });
 
-    // Agregar manejo de teclas de dirección
+    // Actualizar el manejador de eventos de teclas
     document.addEventListener('keydown', (e) => {
-        // Solo procesar si es flecha arriba o abajo
         if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-            e.preventDefault(); // Prevenir el scroll default
+            e.preventDefault();
             
-            // Determinar dirección
-            const goingDown = e.key === 'ArrowDown';
-            
-            // Si vamos hacia abajo y no está visible el grid, o
-            // si vamos hacia arriba y está visible el grid
-            if ((goingDown && !isGridVisible) || (!goingDown && isGridVisible)) {
-                toggleSensors(goingDown);
+            if (e.key === 'ArrowDown') {
+                // Movimiento hacia abajo
+                if (!isGridVisible && !isThirdPanelVisible) {
+                    // De primera vista a segunda vista
+                    toggleView('down');
+                } else if (isGridVisible && !isThirdPanelVisible) {
+                    // De segunda vista a tercera vista
+                    toggleView('down');
+                }
+            } else if (e.key === 'ArrowUp') {
+                // Movimiento hacia arriba
+                if (isThirdPanelVisible) {
+                    // De tercera vista a segunda vista
+                    toggleView('up');
+                } else if (isGridVisible) {
+                    // De segunda vista a primera vista
+                    toggleView('up');
+                }
             }
         }
     });
+}); // Add closing brace for DOMContentLoaded
 
-    // Remover manejadores antiguos de scroll si existen
-    if (typeof scrollObserver !== 'undefined') {
-        scrollObserver.kill();
+// Main panel transition function
+const handlePanelTransition = (direction) => {
+    const roomTemp = document.querySelector('.room-temp-container');
+    const widgets = document.querySelector('.widgets-container');
+    const sensorGrid = document.querySelector('.sensor-grid');
+    const thirdPanel = document.querySelector('.third-panel');
+
+    if (direction === 'down') {
+        if (!state.isGridVisible && !state.isThirdPanelVisible) {
+            // Primera vista a segunda vista
+            gsap.to([roomTemp, widgets], {
+                opacity: 0,
+                y: -20,
+                duration: 0.3,
+                onComplete: () => {
+                    roomTemp.style.display = 'none';
+                    widgets.style.display = 'none';
+                    sensorGrid.style.display = 'grid';
+                    gsap.fromTo(sensorGrid, 
+                        { opacity: 0, y: 20 },
+                        { opacity: 1, y: 0, duration: 0.3 }
+                    );
+                }
+            });
+            state.isGridVisible = true;
+            state.isThirdPanelVisible = false;
+        } else if (state.isGridVisible && !state.isThirdPanelVisible) {
+            // Segunda vista a tercera vista
+            gsap.to(sensorGrid, {
+                opacity: 0,
+                y: -20,
+                duration: 0.3,
+                onComplete: () => {
+                    sensorGrid.style.display = 'none';
+                    thirdPanel.style.display = 'grid';
+                    gsap.fromTo(thirdPanel, 
+                        { opacity: 0, y: 20 },
+                        { opacity: 1, y: 0, duration: 0.3 }
+                    );
+                }
+            });
+            state.isGridVisible = false;
+            state.isThirdPanelVisible = true;
+        }
+    } else if (direction === 'up') {
+        if (state.isThirdPanelVisible) {
+            // Tercera vista a segunda vista
+            gsap.to(thirdPanel, {
+                opacity: 0,
+                y: 20,
+                duration: 0.3,
+                onComplete: () => {
+                    thirdPanel.style.display = 'none';
+                    sensorGrid.style.display = 'grid';
+                    gsap.fromTo(sensorGrid, 
+                        { opacity: 0, y: -20 },
+                        { opacity: 1, y: 0, duration: 0.3 }
+                    );
+                }
+            });
+            state.isThirdPanelVisible = false;
+            state.isGridVisible = true;
+        } else if (state.isGridVisible) {
+            // Segunda vista a primera vista
+            gsap.to(sensorGrid, {
+                opacity: 0,
+                y: 20,
+                duration: 0.3,
+                onComplete: () => {
+                    sensorGrid.style.display = 'none';
+                    roomTemp.style.display = 'flex';
+                    widgets.style.display = 'grid';
+                    gsap.fromTo([roomTemp, widgets], 
+                        { opacity: 0, y: -20 },
+                        { opacity: 1, y: 0, duration: 0.3 }
+                    );
+                }
+            });
+            state.isGridVisible = false;
+            state.isThirdPanelVisible = false;
+        }
+    }
+};
+
+// Event listeners for navigation
+window.addEventListener('wheel', (e) => {
+    clearTimeout(state.scrollTimeout);
+    const now = Date.now();
+    
+    if (now - state.lastScrollTime > 500) {
+        if (Math.abs(e.deltaY) > 30) {
+            handlePanelTransition(e.deltaY > 0 ? 'down' : 'up');
+            state.lastScrollTime = now;
+        }
+    }
+    
+    state.scrollTimeout = setTimeout(() => {
+        state.lastScrollTime = 0;
+    }, 500);
+}, { passive: true });
+
+document.addEventListener('touchstart', (e) => {
+    state.touchStartY = e.touches[0].clientY;
+    state.isTouching = true;
+}, { passive: true });
+
+document.addEventListener('touchend', (e) => {
+    if (state.isTouching && state.touchStartY !== null) {
+        const touchEndY = e.changedTouches[0].clientY;
+        const diff = state.touchStartY - touchEndY;
+        
+        if (Math.abs(diff) > 50) {
+            handlePanelTransition(diff > 0 ? 'down' : 'up');
+        }
+        
+        state.touchStartY = null;
+        state.isTouching = false;
+    }
+}, { passive: true });
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        handlePanelTransition(e.key === 'ArrowDown' ? 'down' : 'up');
     }
 });
