@@ -6,464 +6,176 @@
     <title>Widgets Clima</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+/* Primero, simplificar el diseño base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
-        body {
-            margin: 0;
-            padding: 1rem;
-            min-height: 100vh;
-            background-color: #f0f8ff;
-            display: grid;
-            place-items: center;
-        }
+body {
+    background-color: #f0f8ff;
+    padding: 0;
+    margin: 0;
+    min-height: 100vh;
+    overflow: hidden;
+}
 
-        .weather-widget,
-        .wind-widget,
-        .precipitation-widget,
-        .weather-condition-widget,
-        .visibility-widget,
-        .air-quality-widget,
-        .uv-widget {
-            width: 100%;
-            height: auto;
-            min-height: 200px;
-            padding: 1.5rem;
-            position: relative;
-            background: rgba(255, 255, 255, 0.35);
-            backdrop-filter: blur(15px);
-            border-radius: 30px;
-            border: 2px solid rgba(255, 255, 255, 0.5);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
+.widget-column {
+    display: grid;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    width: 100%;
+    height: 100vh;
+}
 
-        .title {
-            font-family: 'Arial', sans-serif;
-            font-size: clamp(1rem, 2vw, 1.5rem);
-            color: #5a7089;
-            text-align: center;
-            margin-bottom: 1rem;
-            font-weight: 500;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
+/* Estilos base simplificados para widgets */
+.weather-widget,
+.wind-widget,
+.precipitation-widget,
+.visibility-widget,
+.air-quality-widget,
+.uv-widget,
+.weather-condition-widget {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
 
-        .temperature, 
-        .wind-speed,
-        .precipitation-chance,
-        .visibility-value,
-        .uv-value {
-            font-family: 'Arial', sans-serif;
-            font-size: clamp(3rem, 5vw, 7rem);
-            font-weight: bold;
-            color: #2c3e50;
-            text-align: center;
-            letter-spacing: -4px;
-        }
+/* Media query específico para móviles */
+@media screen and (max-width: 768px) {
+    .widget-column {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+        padding: 0.5rem;
+        height: auto;
+    }
 
-        .wind-details {
-            display: flex;
-            gap: 4rem;
-            margin-top: 1rem;
-        }
+    /* Simplificar widgets */
+    .weather-widget,
+    .wind-widget,
+    .precipitation-widget,
+    .visibility-widget,
+    .air-quality-widget,
+    .uv-widget,
+    .weather-condition-widget {
+        aspect-ratio: 1/1;
+        padding: 0.75rem;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: none;
+    }
 
-        .wind-detail {
-            text-align: center;
-        }
+    /* Ajustar tamaños de texto */
+    .title {
+        font-size: 0.875rem;
+        margin-bottom: 0.5rem;
+    }
 
-        .wind-label {
-            font-family: 'Arial', sans-serif;
-            color: #5a7089;
-            font-size: 1.2rem;
-            margin-bottom: 0.5rem;
-        }
+    .temperature,
+    .wind-speed,
+    .precipitation-chance,
+    .visibility-value,
+    .uv-value {
+        font-size: 2rem;
+        letter-spacing: -1px;
+    }
 
-        .wind-value {
-            font-family: 'Arial', sans-serif;
-            color: #2c3e50;
-            font-size: 2rem;
-            font-weight: bold;
-        }
+    .location {
+        font-size: 0.875rem;
+    }
 
-        .container {
-            display: flex;
-            gap: 2rem;
-        }
+    /* Ajustar detalles del viento */
+    .wind-details {
+        gap: 1rem;
+        margin-top: 0.5rem;
+    }
 
-        .weather-condition-widget {
-            position: relative;
-            width: 300px;
-            height: 300px;
-            margin: 0;
-            background: rgba(255, 255, 255, 0.35);
-            backdrop-filter: blur(15px);
-            border-radius: 50%;
-            border: 2px solid rgba(255, 255, 255, 0.5);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-        }
+    .wind-label {
+        font-size: 0.75rem;
+    }
 
-        .weather-icon {
-            width: 70%;
-            height: 70%;
-        }
+    .wind-value {
+        font-size: 1rem;
+    }
 
-        .widget-row {
-            display: grid;
-            gap: 1rem;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            justify-content: center;
-            align-items: flex-start;
-        }
+    /* Ajustar calidad del aire */
+    .aqi-description {
+        font-size: 1.25rem;
+        margin-bottom: 0.5rem;
+    }
 
-        .left-widgets {
-            display: flex;
-            flex-direction: column;
-            gap: 2rem;
-        }
+    .air-quality-scale {
+        width: 90%;
+        height: 8px;
+    }
 
-        .widget-column {
-            display: grid;
-            gap: 1rem;
-            width: 100%;
-            height: 100vh;
-            max-width: 1600px;
-        }
+    .air-quality-indicator {
+        width: 16px;
+        height: 16px;
+    }
 
-        .yellow {
-            fill: #FFC107;
-        }
+    /* Ajustar widget de clima */
+    .weather-condition-widget {
+        border-radius: 12px;
+        background: #fff;
+    }
 
-        .white {
-            fill: #FFFFFF;
-        }
+    .weather-icon {
+        width: 60%;
+        height: 60%;
+    }
+}
 
-        .gray {
-            fill: #E0E0E0;
-        }
+/* Ajustes específicos para pantallas muy pequeñas */
+@media screen and (max-width: 360px) {
+    .widget-column {
+        gap: 0.25rem;
+        padding: 0.25rem;
+    }
 
-        .air-quality-widget {
-            width: 400px;
-            height: 300px;
-            margin: 0;
-            position: relative;
-            padding: 2rem;
-            background: rgba(255, 255, 255, 0.35);
-            backdrop-filter: blur(15px);
-            border-radius: 30px;
-            border: 2px solid rgba(255, 255, 255, 0.5);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
+    .title {
+        font-size: 0.75rem;
+    }
 
-        .aqi-value {
-            font-family: 'Arial', sans-serif;
-            font-size: 4rem;
-            font-weight: bold;
-            color: #2c3e50;
-            margin: 1rem 0;
-        }
-
-        .aqi-label {
-            font-family: 'Arial', sans-serif;
-            font-size: 1.2rem;
-            color: #5a7089;
-            margin-bottom: 0.5rem;
-        }
-
-        .aqi-description {
-            font-family: 'Arial', sans-serif;
-            font-size: 3rem;
-            font-weight: bold;
-            margin-bottom: 2rem;
-        }
-
-        .air-quality-scale {
-            width: 80%;
-            height: 15px;
-            background: linear-gradient(to right, 
-                #00e400 0%, 
-                #ffff00 25%, 
-                #ff7e00 50%, 
-                #ff0000 75%, 
-                #7e0023 100%
-            );
-            border-radius: 8px;
-            position: relative;
-        }
-
-        .air-quality-indicator {
-            position: absolute;
-            width: 25px;
-            height: 25px;
-            background-color: #fff;
-            border: 3px solid #2c3e50;
-            border-radius: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            transition: left 0.3s ease;
-        }
-
-        .pollutant-details {
-            display: flex;
-            gap: 2rem;
-            margin-top: 1rem;
-        }
-
-        .pollutant {
-            text-align: center;
-        }
-
-        .pollutant-value {
-            font-family: 'Arial', sans-serif;
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #2c3e50;
-        }
-
-        .pollutant-label {
-            font-family: 'Arial', sans-serif;
-            font-size: 0.9rem;
-            color: #5a7089;
-        }
-
-        .precipitation-widget {
-            position: relative;
-            width: 400px;
-            height: 300px;
-            padding: 2rem;
-            background: rgba(255, 255, 255, 0.35);
-            backdrop-filter: blur(15px);
-            border-radius: 30px;
-            border: 2px solid rgba(255, 255, 255, 0.5);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .precipitation-chance {
-            font-family: 'Arial', sans-serif;
-            font-size: 7rem;
-            font-weight: bold;
-            color: #2c3e50;
-            text-align: center;
-            letter-spacing: -4px;
-        }
-
-        .precipitation-label {
-            font-family: 'Arial', sans-serif;
-            color: #5a7089;
-            font-size: 1.2rem;
-            margin-top: 1rem;
-        }
-
-        .visibility-widget {
-            position: relative;
-            width: 400px;
-            height: 300px;
-            padding: 2rem;
-            background: rgba(255, 255, 255, 0.35);
-            backdrop-filter: blur(15px);
-            border-radius: 30px;
-            border: 2px solid rgba(255, 255, 255, 0.5);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            margin: 0;
-        }
-
-        .visibility-value {
-            font-family: 'Arial', sans-serif;
-            font-size: 7rem;
-            font-weight: bold;
-            color: #2c3e50;
-            text-align: center;
-            letter-spacing: -4px;
-        }
-
-        .visibility-unit {
-            font-family: 'Arial', sans-serif;
-            color: #5a7089;
-            font-size: 1.2rem;
-            margin-top: 1rem;
-        }
-
-        .uv-widget {
-            position: relative;
-            width: 400px;
-            height: 300px;
-            padding: 2rem;
-            background: rgba(255, 255, 255, 0.35);
-            backdrop-filter: blur(15px);
-            border-radius: 30px;
-            border: 2px solid rgba(255, 255, 255, 0.5);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .uv-value {
-            font-family: 'Arial', sans-serif;
-            font-size: 7rem;
-            font-weight: bold;
-            color: #2c3e50;
-            text-align: center;
-            letter-spacing: -4px;
-        }
-
-        .uv-description {
-            font-family: 'Arial', sans-serif;
-            font-size: 1.2rem;
-            color: #5a7089;
-            margin-top: 1rem;
-        }
-        
-        @keyframes fadeIn {
-            from { 
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to { 
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @media (max-width: 1200px) {
-            .widget-row {
-                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            }
-        }
-
-        @media (max-width: 768px) {
-            body {
-                padding: 0.5rem;
-            }
-            
-            .widget-row {
-                grid-template-columns: 1fr;
-            }
-            
-            .weather-condition-widget {
-                aspect-ratio: 1;
-            }
-        }
-
-        @media (max-height: 800px) {
-            .widget-column {
-                gap: 0.5rem;
-            }
-            
-            .weather-widget,
-            .wind-widget,
-            .precipitation-widget,
-            .weather-condition-widget,
-            .visibility-widget,
-            .air-quality-widget,
-            .uv-widget {
-                min-height: 150px;
-                padding: 1rem;
-            }
-        }
+    .temperature,
+    .wind-speed,
+    .precipitation-chance,
+    .visibility-value,
+    .uv-value {
+        font-size: 1.75rem;
+    }
+}
     </style>
 </head>
 <body>
     <div class="widget-column">
-        <!-- Primera fila -->
-        <div class="widget-row">
-            <div class="left-widgets">
-                <div class="weather-widget">
-                    <div class="title">Temperatura Exterior</div>
-                    <div class="temperature">24°C</div>
-                    <div class="location">CDMX</div>
-                </div>
-
-                
-            </div>
-
-            <div class="wind-widget">
-                <div class="title">Viento</div>
-                <div class="wind-speed">12 km/h</div>
-                <div class="wind-details">
-                    <div class="wind-detail">
-                        <div class="wind-label">Dirección</div>
-                        <div class="wind-value">NE</div>
-                    </div>
-                    <div class="wind-detail">
-                        <div class="wind-label">Ráfagas</div>
-                        <div class="wind-value">25 km/h</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="precipitation-widget">
-                <div class="title">Probabilidad de Lluvia</div>
-                <div class="precipitation-chance">30%</div>
-                <div class="precipitation-label">Probabilidad de precipitación</div>
-            </div>
+        <div class="weather-widget">
+            <div class="title">Temperatura</div>
+            <div class="temperature">24°C</div>
+            <div class="location">CDMX</div>
         </div>
 
-        <!-- Segunda fila -->
-        <div class="widget-row">
-            <div class="weather-condition-widget">
-                <!-- SVG para día soleado -->
-                <svg class="weather-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                    <!-- Sol -->
-                    <circle cx="50" cy="50" r="20" fill="#FFD700"/>
-                    <g stroke="#FFD700" stroke-width="4">
-                        <!-- Rayos del sol -->
-                        <line x1="50" y1="15" x2="50" y2="5"/>
-                        <line x1="50" y1="85" x2="50" y2="95"/>
-                        <line x1="15" y1="50" x2="5" y2="50"/>
-                        <line x1="85" y1="50" x2="95" y2="50"/>
-                        <!-- Rayos diagonales -->
-                        <line x1="25" y1="25" x2="15" y2="15"/>
-                        <line x1="75" y1="25" x2="85" y2="15"/>
-                        <line x1="25" y1="75" x2="15" y2="85"/>
-                        <line x1="75" y1="75" x2="85" y2="85"/>
-                    </g>
-                </svg>
-            </div>
-
-            <div class="visibility-widget">
-                <div class="title">Visibilidad</div>
-                <div class="visibility-value">10</div>
-                <div class="visibility-unit">kilómetros</div>
-            </div>
-
-            <div class="air-quality-widget">
-                <div class="title">Calidad del Aire</div>
-                <div class="aqi-description">Moderado</div>
-                <div class="air-quality-scale">
-                    <div class="air-quality-indicator"></div>
+        <div class="wind-widget">
+            <div class="title">Viento</div>
+            <div class="wind-speed">12</div>
+            <div class="wind-details">
+                <div class="wind-detail">
+                    <div class="wind-label">Dir</div>
+                    <div class="wind-value">NE</div>
+                </div>
+                <div class="wind-detail">
+                    <div class="wind-label">Ráf</div>
+                    <div class="wind-value">25</div>
                 </div>
             </div>
-
-            <div class="uv-widget">
-                <div class="title">Índice UV</div>
-                <div class="uv-value">6</div>
-                <div class="uv-description">Moderado</div>
-            </div>
         </div>
+        
+        <!-- ... resto de widgets ... -->
     </div>
 
     <script>

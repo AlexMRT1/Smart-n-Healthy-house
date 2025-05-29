@@ -3,7 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Verificacion | smart'n healthy house</title>
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+  <link rel="icon" 
+        type="image/png" 
+        href="../../../../../WWW/Assets/logo1Black.svg"
+        media="(prefers-color-scheme: light)" />
+    
+  <link rel="icon" 
+        type="image/png" 
+        href="../../../../../WWW/Assets/logo1White.svg" 
+        media="(prefers-color-scheme: dark)" />
+  <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin-allow-popups">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Liter&family=Noto+Sans+Mono:wght@100..900&family=Parkinsans:wght@300..800&family=Quicksand:wght@300..700&display=swap');
         body {
@@ -129,9 +144,60 @@
     transition: all 0.3s ease;
 }
 
-.beta-badge:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(74, 144, 226, 0.3);
+/* Toast styles */
+.toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 25px;
+    border-radius: 8px;
+    color: white;
+    font-family: "Quicksand", sans-serif;
+    transform: translateX(150%);
+    transition: transform 0.3s ease;
+    z-index: 9999;
+}
+
+.toast.show {
+    transform: translateX(0);
+}
+
+.toast.error {
+    background-color: #ff4444;
+    box-shadow: 0 4px 12px rgba(255, 68, 68, 0.2);
+}
+
+.toast.success {
+    background-color: #00C851;
+    box-shadow: 0 4px 12px rgba(0, 200, 81, 0.2);
+}
+
+/* Verification box states */
+.box.error {
+    border-color: #ff4444;
+    animation: shake 0.5s ease-in-out;
+}
+
+.box.success {
+    border-color: #00C851;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+.error-message {
+    color: #ff4444;
+    margin-top: 10px;
+    font-size: 14px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.error-message.show {
+    opacity: 1;
 }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -172,58 +238,103 @@
             Reenviar código
         </button>
     </div>
+    <div id="toast" class="toast"></div>
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const inputs = document.querySelectorAll('.box input');
-        const resendButton = document.querySelector('.resend-button');
-        
-        inputs.forEach((input, index) => {
-            // Only allow numbers
-            input.addEventListener('input', function(e) {
-                const value = e.target.value;
-                
-                // Remove any non-numeric characters
-                e.target.value = value.replace(/[^0-9]/g, '');
-                
-                // If a number was entered and there's a next input, focus it
-                if (value && index < inputs.length - 1) {
-                    inputs[index + 1].focus();
-                }
-            });
+document.addEventListener('DOMContentLoaded', function() {
+    const inputs = document.querySelectorAll('.box input');
+    const resendButton = document.querySelector('.resend-button');
+    const toast = document.getElementById('toast');
+    let verificationInProgress = false;
 
-            // Handle backspace
-            input.addEventListener('keydown', function(e) {
-                if (e.key === 'Backspace' && !e.target.value && index > 0) {
-                    inputs[index - 1].focus();
-                }
-            });
+    // Add error message element
+    const errorMessage = document.createElement('p');
+    errorMessage.className = 'error-message';
+    errorMessage.textContent = 'Código incorrecto';
+    document.querySelector('.verification-boxes').after(errorMessage);
+
+    // Send verification code immediately when page loads
+    sendVerificationCode();
+
+    function showToast(message, type) {
+        toast.textContent = message;
+        toast.className = `toast ${type}`;
+        toast.classList.add('show');
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3000);
+    }
+
+    function setBoxesState(state) {
+        inputs.forEach(input => {
+            input.parentElement.classList.remove('error', 'success');
+            if (state) {
+                input.parentElement.classList.add(state);
+            }
         });
+    }
 
-    // Función para enviar el código
+    async function verifyCode() {
+        if (verificationInProgress) return;
+
+        const code = Array.from(inputs).map(input => input.value).join('');
+        if (code.length !== 5) return;
+
+        verificationInProgress = true;
+        setBoxesState('');
+        errorMessage.classList.remove('show');
+
+        try {
+            const email = new URLSearchParams(window.location.search).get('email') || 
+                         localStorage.getItem('userEmail') ||
+                         decodeURIComponent(document.cookie
+                            .split('; ')
+                            .find(row => row.startsWith('userEmail='))
+                            ?.split('=')[1] || '');
+
+            const response = await fetch('http://localhost:3002/verify-code', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify({ email, code })
+            });
+
+            const data = await response.json();
+            
+            if (data.success) {
+                setBoxesState('success');
+                showToast('Verificación exitosa', 'success');
+                setTimeout(() => {
+                    window.location.href = '../Data/index.html'; // Change this to your desired URL
+                }, 1000);
+            } else {
+                setBoxesState('error');
+                errorMessage.classList.add('show');
+                showToast(data.message || 'Código incorrecto', 'error');
+                inputs.forEach(input => input.value = '');
+                inputs[0].focus();
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showToast('Error al verificar el código', 'error');
+        } finally {
+            verificationInProgress = false;
+        }
+    }
+
+    // Modify sendVerificationCode to use toast
     async function sendVerificationCode() {
         try {
-            // Get email from URL parameters, localStorage, or cookies
             const userEmail = new URLSearchParams(window.location.search).get('email') || 
-                             localStorage.getItem('userEmail') ||
-                             decodeURIComponent(document.cookie
+                            localStorage.getItem('userEmail') ||
+                            decodeURIComponent(document.cookie
                                 .split('; ')
                                 .find(row => row.startsWith('userEmail='))
                                 ?.split('=')[1] || '');
             
-            // Log detailed information
-            console.log('Cookies encontradas:', {
-                raw: document.cookie,
-                parsed: document.cookie.split('; ').reduce((acc, cookie) => {
-                    const [key, value] = cookie.split('=');
-                    acc[key] = decodeURIComponent(value);
-                    return acc;
-                }, {})
-            });
-            console.log('Email encontrado:', userEmail);
-            
             if (!userEmail) {
-                console.log('No se encontró email en parámetros, localStorage ni cookies');
-                alert('No se encontró el correo electrónico');
+                showToast('No se encontró el correo electrónico', 'error');
                 return;
             }
 
@@ -236,26 +347,42 @@
                 body: JSON.stringify({ email: userEmail })
             });
             
-            if (!response.ok) {
-                console.log('Error en la respuesta:', response.status);
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            
             const data = await response.json();
-            console.log('Respuesta del servidor:', data);
             
             if (data.success) {
-                alert('Código enviado correctamente');
+                showToast('Código enviado correctamente', 'success');
             } else {
-                alert(data.message || 'Error al enviar el código');
+                showToast(data.message || 'Error al enviar el código', 'error');
             }
         } catch (error) {
-            console.error('Error detallado:', error);
-            alert('Error al enviar el código. Por favor, intente nuevamente.');
+            console.error('Error:', error);
+            showToast('Error al enviar el código', 'error');
         }
     }
 
-    // Event listener para el botón de reenvío
+    // Keep existing input event listeners
+    inputs.forEach((input, index) => {
+        input.addEventListener('input', function(e) {
+            const value = e.target.value;
+            e.target.value = value.replace(/[^0-9]/g, '');
+            
+            if (value) {
+                if (index < inputs.length - 1) {
+                    inputs[index + 1].focus();
+                }
+                if (index === inputs.length - 1) {
+                    verifyCode();
+                }
+            }
+        });
+
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Backspace' && !e.target.value && index > 0) {
+                inputs[index - 1].focus();
+            }
+        });
+    });
+
     resendButton.addEventListener('click', sendVerificationCode);
 });
 </script>

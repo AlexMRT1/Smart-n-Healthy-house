@@ -243,6 +243,27 @@ body::before {
             background: rgba(255, 255, 255, 0.35);
         }
 
+                .mini-widget-no-interaction {
+            width: 400px;
+            height: 200px;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .mini-widget-no-interaction:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.35);
+        }
+
+
         .widget-header {
             display: flex;
             align-items: center;
@@ -314,8 +335,9 @@ body::before {
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(255, 255, 255, 0.856);
+            background: rgba(0, 0, 0, 0);
             display: none;
+            backdrop-filter: blur(20px);
             justify-content: center;
             align-items: center;
             z-index: 2000;
@@ -414,8 +436,8 @@ body::before {
             left: 0;
             width: 100%;
             height: 100%;
-                    background: rgba(255, 255, 255, 0.856);
-            backdrop-filter: blur(8px);
+                    background: rgba(0, 0, 0, 0);
+            backdrop-filter: blur(20px);
             display: none;
             justify-content: center;
             align-items: center;
@@ -631,86 +653,45 @@ body::before {
     display: none;
 }
 
-/* Toast responsivo */
+/* Toast Styles */
 .toast {
     position: fixed;
     top: 20px;
     left: 50%;
     transform: translateX(-50%);
-    padding: 15px 30px;
-    border-radius: 12px;
+    padding: 10px 20px;
+    border-radius: 8px;
     z-index: 10000;
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    width: calc(100% - 30px);
-    max-width: 400px;
-    margin: 0 auto;
-}
-
-.welcome-toast {
-    color: #333;
-    min-width: 200px;
-    text-align: center;
-}
-
-.welcome-toast .toast-text {
-    font-weight: 500;
-    font-size: 1.1em;
-}
-
-.toast-container {
-    position: fixed;
-    top: 20px;
-    left: 0;
-    right: 0;
-    display: flex;
-    justify-content: center;
-    pointer-events: none;
-    z-index: 10000;
+    max-width: 300px; /* Reducido el ancho máximo */
+    width: auto;
 }
 
 .error-toast {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
     background: rgba(255, 87, 87, 0.95);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 8px 32px rgba(255, 87, 87, 0.2);
     color: white;
-    padding: 12px 20px;
-    min-width: 280px;
+    font-size: 0.9rem;
 }
 
-.error-toast .error-icon {
+.warning-toast {
     display: flex;
     align-items: center;
-    justify-content: center;
-    width: 24px;
-    height: 24px;
-    color: white;
-    flex-shrink: 0;
+    gap: 8px;
+    background: rgba(255, 193, 7, 0.95);
+    color: #2c3e50;
+    font-size: 0.9rem;
 }
 
-.error-toast .toast-text {
-    color: white;
+.toast .toast-text {
     font-weight: 500;
-    font-size: 0.95em;
-    line-height: 1.4;
-}
-
-.error-toast.glass-effect {
-    background: rgba(255, 87, 87, 0.95);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-}
-
-/* Asegurar que la animación del toast mantenga el glassmorphism */
-.error-toast {
-    transition: all 0.3s ease;
-    transform-origin: top;
+    font-size: 0.9rem;
+    line-height: 1.2;
 }
 
 /* Spinner Styles */
@@ -1151,13 +1132,18 @@ body::before {
     z-index: 1000;
 }
 
+.sensors-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    padding: 1rem;
+    width: 100%;
+    margin: 0 auto;
+    align-items: center;
+    justify-items: center;
+    min-height: 100%;
+}
 
-        .sensors-content {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            padding: 1rem;
-        }
 
         .sensor-item {
             position: relative;
@@ -1918,4 +1904,14 @@ body::before {
     0% { text-shadow: 0 0 20px rgba(255, 0, 0, 0.5); }
     50% { text-shadow: 0 0 40px rgba(255, 0, 0, 0.8); }
     100% { text-shadow: 0 0 20px rgba(255, 0, 0, 0.5); }
+}
+*:hover{
+    cursor: default;
+}
+.mini-widget *:hover{
+    cursor: pointer;
+}
+.mini-widget-no-interaction .widget-header:hover,
+.mini-widget-no-interaction .widget-content:hover {
+    cursor: default;
 }

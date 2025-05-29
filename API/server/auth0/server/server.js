@@ -35,7 +35,7 @@ const validatePassword = (password) => {
 
 app.post("/register", async (req, res) => {
   try {
-    const { email, password, nombre, uid } = req.body;
+    const { email, password, nombre, uid, location } = req.body;
 
     // Validaciones
     if (!email || !password || !nombre || !uid) {
@@ -44,20 +44,10 @@ app.post("/register", async (req, res) => {
       });
     }
 
-    // Verificar si el email ya existe en la colección Users
-    const usersRef = db.collection("Users");
-    const snapshot = await usersRef.where("Email", "==", email).get();
-    
-    if (!snapshot.empty) {
-      return res.status(400).json({ 
-        message: "El email ya está registrado" 
-      });
-    }
-
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Crear documento con el UID como nombre en la colección Users
-    await usersRef.doc(uid).set({
+    await db.collection("Users").doc(uid).set({
       Email: email,
       Password: hashedPassword,
       Nombre: nombre,
@@ -68,11 +58,11 @@ app.post("/register", async (req, res) => {
       UserImg: "",
       faceData: null,
       lastFaceUpdate: null,
-      // Agregar campos de ubicación
+      // Guardar la ubicación del usuario
       location: {
-        country: "",
-        state: "",
-        city: ""
+        country: location?.country || "",
+        state: location?.state || "",
+        city: location?.city || ""
       },
       createdAt: new Date().toISOString()
     });
@@ -96,6 +86,20 @@ app.post("/social-auth", async (req, res) => {
     const { uid, email, nombre, photoURL } = req.body;
     const usersRef = db.collection("Users");
 
+    // Get user location
+    let location = { country: "", state: "", city: "" };
+    try {
+      const response = await fetch('https://ipapi.co/json/');
+      const locationData = await response.json();
+      location = {
+        country: locationData.country_name,
+        state: locationData.region,
+        city: locationData.city
+      };
+    } catch (error) {
+      console.error('Error getting location:', error);
+    }
+
     // Check if user exists
     const userDoc = await usersRef.doc(uid).get();
 
@@ -111,6 +115,7 @@ app.post("/social-auth", async (req, res) => {
         Sensors: [],
         battery: "",
         UserImg: photoURL || "",
+        location: location, // Add location data
         createdAt: new Date().toISOString()
       });
     }

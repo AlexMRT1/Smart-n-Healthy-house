@@ -2,10 +2,13 @@
 const state = {
     isGridVisible: false,
     isThirdPanelVisible: false,
-    lastScrollTime: 0,
-    scrollTimeout: null,
+    lastScrollTime: Date.now(),
+    scrollCount: 0,
+    scrollResetTimeout: null,
     isTouching: false,
-    touchStartY: null
+    touchStartY: null,
+    pressedKeys: new Set(), // Nuevo: para rastrear teclas presionadas
+    tooFastToastTimeout: null // Nuevo: para controlar el toast
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -396,11 +399,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const widgets = document.querySelector('.widgets-container');
         const sensorGrid = document.querySelector('.sensor-grid');
         const thirdPanel = document.querySelector('.third-panel');
-        const roomName = document.querySelector('.room-name');
+        
+        gsap.killTweensOf([roomTemp, widgets, sensorGrid, thirdPanel]);
         
         if (direction === 'down') {
             if (!state.isGridVisible && !state.isThirdPanelVisible) {
-                // Primera vista a segunda vista
+                // Primera a segunda vista
                 gsap.to([roomTemp, widgets], {
                     opacity: 0,
                     y: -20,
@@ -409,37 +413,47 @@ document.addEventListener('DOMContentLoaded', () => {
                         roomTemp.style.display = 'none';
                         widgets.style.display = 'none';
                         sensorGrid.style.display = 'grid';
-                        roomName.classList.add('centered');
-                        sensorGrid.classList.add('visible');
                         gsap.fromTo(sensorGrid, 
-                            { opacity: 0, y: 20 },
-                            { opacity: 1, y: 0, duration: 0.3 }
+                            { opacity: 0, y: 20, display: 'grid' },
+                            { 
+                                opacity: 1, 
+                                y: 0, 
+                                duration: 0.3,
+                                onComplete: () => {
+                                    state.isGridVisible = true;
+                                    state.isThirdPanelVisible = false;
+                                }
+                            }
                         );
                     }
                 });
-                state.isGridVisible = true;
-                state.isThirdPanelVisible = false;
             } else if (state.isGridVisible && !state.isThirdPanelVisible) {
-                // Segunda vista a tercera vista
+                // Segunda a tercera vista
                 gsap.to(sensorGrid, {
                     opacity: 0,
                     y: -20,
                     duration: 0.3,
                     onComplete: () => {
                         sensorGrid.style.display = 'none';
-                        thirdPanel.style.display = 'grid';
+                        thirdPanel.style.display = 'block';
                         gsap.fromTo(thirdPanel,
                             { opacity: 0, y: 20 },
-                            { opacity: 1, y: 0, duration: 0.3 }
+                            { 
+                                opacity: 1, 
+                                y: 0, 
+                                duration: 0.3,
+                                onComplete: () => {
+                                    state.isGridVisible = false;
+                                    state.isThirdPanelVisible = true;
+                                }
+                            }
                         );
                     }
                 });
-                state.isGridVisible = false;
-                state.isThirdPanelVisible = true;
             }
         } else if (direction === 'up') {
             if (state.isThirdPanelVisible) {
-                // Tercera vista a segunda vista
+                // Tercera a segunda vista
                 gsap.to(thirdPanel, {
                     opacity: 0,
                     y: 20,
@@ -447,34 +461,44 @@ document.addEventListener('DOMContentLoaded', () => {
                     onComplete: () => {
                         thirdPanel.style.display = 'none';
                         sensorGrid.style.display = 'grid';
-                        gsap.fromTo(sensorGrid,
+                        gsap.fromTo(sensorGrid, 
                             { opacity: 0, y: -20 },
-                            { opacity: 1, y: 0, duration: 0.3 }
+                            { 
+                                opacity: 1, 
+                                y: 0, 
+                                duration: 0.3,
+                                onComplete: () => {
+                                    state.isGridVisible = true;
+                                    state.isThirdPanelVisible = false;
+                                }
+                            }
                         );
                     }
                 });
-                state.isThirdPanelVisible = false;
-                state.isGridVisible = true;
             } else if (state.isGridVisible) {
-                // Segunda vista a primera vista
+                // Segunda a primera vista
                 gsap.to(sensorGrid, {
                     opacity: 0,
                     y: 20,
                     duration: 0.3,
                     onComplete: () => {
                         sensorGrid.style.display = 'none';
-                        sensorGrid.classList.remove('visible');
                         roomTemp.style.display = 'flex';
                         widgets.style.display = 'grid';
-                        roomName.classList.remove('centered');
                         gsap.fromTo([roomTemp, widgets],
                             { opacity: 0, y: -20 },
-                            { opacity: 1, y: 0, duration: 0.3 }
+                            { 
+                                opacity: 1, 
+                                y: 0, 
+                                duration: 0.3,
+                                onComplete: () => {
+                                    state.isGridVisible = false;
+                                    state.isThirdPanelVisible = false;
+                                }
+                            }
                         );
                     }
                 });
-                state.isGridVisible = false;
-                state.isThirdPanelVisible = false;
             }
         }
     };
@@ -515,30 +539,63 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, { passive: true });
 
-    // Actualizar el manejador de eventos de teclas
+    // Modificar el event listener de keydown
     document.addEventListener('keydown', (e) => {
         if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
             e.preventDefault();
             
+            // Verificar si ambas flechas están presionadas
+            if (state.pressedKeys.has('ArrowUp') && state.pressedKeys.has('ArrowDown')) {
+                showToast('Usa una flecha a la vez', 'warning');
+                return;
+            }
+
+            const now = Date.now();
+            const timeSinceLastScroll = now - state.lastScrollTime;
+
+            // Incrementar contador de scroll
+            state.scrollCount++;
+
+            // Resetear el contador después de un tiempo
+            clearTimeout(state.scrollResetTimeout);
+            state.scrollResetTimeout = setTimeout(() => {
+                state.scrollCount = 0;
+            }, 1000);
+
+            // Verificar navegación rápida
+            if (timeSinceLastScroll < 300) {
+                showToast('¡Más despacio! Navegando muy rápido', 'warning');
+                return;
+            }
+
+            // Verificar muchos scrolls en poco tiempo
+            if (state.scrollCount > 4) {
+                showToast('Demasiados movimientos seguidos', 'warning');
+                return;
+            }
+
+            state.lastScrollTime = now;
+
             if (e.key === 'ArrowDown') {
-                // Movimiento hacia abajo
-                if (!isGridVisible && !isThirdPanelVisible) {
-                    // De primera vista a segunda vista
+                if (!state.isGridVisible && !state.isThirdPanelVisible) {
                     toggleView('down');
-                } else if (isGridVisible && !isThirdPanelVisible) {
-                    // De segunda vista a tercera vista
+                } else if (state.isGridVisible && !state.isThirdPanelVisible) {
                     toggleView('down');
                 }
             } else if (e.key === 'ArrowUp') {
-                // Movimiento hacia arriba
-                if (isThirdPanelVisible) {
-                    // De tercera vista a segunda vista
+                if (state.isThirdPanelVisible) {
                     toggleView('up');
-                } else if (isGridVisible) {
-                    // De segunda vista a primera vista
+                } else if (state.isGridVisible) {
                     toggleView('up');
                 }
             }
+        }
+    });
+
+    // Agregar el event listener de keyup para limpiar las teclas presionadas
+    document.addEventListener('keyup', (e) => {
+        if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+            state.pressedKeys.delete(e.key);
         }
     });
 }); // Add closing brace for DOMContentLoaded
@@ -666,6 +723,51 @@ document.addEventListener('touchend', (e) => {
 document.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
         e.preventDefault();
-        handlePanelTransition(e.key === 'ArrowDown' ? 'down' : 'up');
+        
+        const now = Date.now();
+        if (now - state.lastScrollTime < 500) return;
+        
+        const direction = e.key === 'ArrowDown' ? 'down' : 'up';
+        toggleView(direction);
+        state.lastScrollTime = now;
     }
+});
+
+// Función para mostrar toast
+function showToast(message, type = 'warning') {
+    // Limpiar toasts existentes
+    const existingToast = document.querySelector('.navigation-toast');
+    if (existingToast) {
+        existingToast.remove();
+    }
+
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}-toast glass-effect navigation-toast`;
+    toast.innerHTML = `
+        <div class="error-icon">
+            <i class="fas ${type === 'warning' ? 'fa-exclamation-triangle' : 'fa-exclamation-circle'}"></i>
+        </div>
+        <span class="toast-text">${message}</span>
+    `;
+
+    document.querySelector('.toast-container').appendChild(toast);
+
+    gsap.fromTo(toast,
+        { y: -50, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.3 }
+    );
+
+    setTimeout(() => {
+        gsap.to(toast, {
+            y: -50,
+            opacity: 0,
+            duration: 0.3,
+            onComplete: () => toast.remove()
+        });
+    }, 2000);
+}
+
+// Limpiar timeouts al desmontar
+window.addEventListener('beforeunload', () => {
+    clearTimeout(state.scrollResetTimeout);
 });

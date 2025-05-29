@@ -130,7 +130,7 @@ function saveUserSession(user) {
 
     // Only redirect if cookies are set
     if (getCookie('userUID')) {
-      window.location.href = './Data/index.html';
+      window.location.href = './verification/index.html';
     } else {
       showToast('Error guardando la sesión', 'error');
     }
@@ -173,11 +173,10 @@ export async function registerUser(email, password, nombre, event) {
     await user.reload();
     const updatedUser = auth.currentUser;
 
-    // Cambiado a puerto 3003
     const response = await fetch('http://localhost:3003/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      credentials: 'include', // Añadido para CORS
+      credentials: 'include',
       body: JSON.stringify({
         email,
         password,
