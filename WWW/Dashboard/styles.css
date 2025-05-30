@@ -553,6 +553,7 @@ body::before {
             text-align: center;
             font-size: 0.9rem;
         }
+        
 /* Glass effect */
 .glass-effect {
     background: rgba(255, 255, 255, 0.2);
@@ -1131,19 +1132,23 @@ body::before {
     opacity: 0;
     z-index: 1000;
 }
+  .sensor-grid {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+            padding: 2rem;
+            font-family: 'Arial', sans-serif;
+        }
 
-.sensors-content {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-    padding: 1rem;
-    width: 100%;
-    margin: 0 auto;
-    align-items: center;
-    justify-items: center;
-    min-height: 100%;
-}
-
+        .sensors-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2.5rem;
+            max-width: 1400px;
+            padding: 2rem;
+        }
 
         .sensor-item {
             position: relative;
@@ -1335,36 +1340,117 @@ body::before {
                 height: 100vh;
             }
 
-    .sensors-content {
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1rem;
+            .sensors-content {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: 1rem;
+                padding: 1rem;
+                width: 100%;
+                align-content: center;
+            }
+
+            .sensor-item {
+                min-height: auto;
+                aspect-ratio: 1;
+                padding: 1rem;
+            }
+
+            .sensor-icon {
+                width: 40px;
+                height: 40px;
+                margin-bottom: 0.75rem;
+            }
+
+            .sensor-label {
+                font-size: 0.8rem;
+                margin-bottom: 0.5rem;
+            }
+
+            .sensor-value {
+                font-size: 1.5rem;
+            }
+
+            /* Ajustar widgets especiales */
+            .sensor-item.fire-sensor {
+                grid-column: span 1;
+                aspect-ratio: 1;
+            }
+            
+            .sensor-item.humidity-sensor {
+                width: 100%;
+                aspect-ratio: 1;
+            }
+
+            /* Estados de alerta más compactos */
+            .sensor-item.danger .sensor-value,
+            .sensor-item.level-high .sensor-value,
+            .sensor-item.level-medium .sensor-value,
+            .sensor-item.level-low .sensor-value,
+            .sensor-item.level-empty .sensor-value {
+                font-size: 1.2rem;
+            }
+
+            /* Ajustar punto de estado */
+            .status-dot {
+                width: 8px;
+                height: 8px;
+                top: 1rem;
+                right: 1rem;
+            }
+
+            /* Eliminar alturas aleatorias en móvil */
+            .sensor-item:nth-child(odd),
+            .sensor-item:nth-child(3n),
+            .sensor-item:nth-child(4n) {
+                min-height: auto;
+            }
+
+            /* Hacer más pequeño el texto de estado para gas y fuego */
+    .sensor-item.danger .sensor-value {
+        font-size: 0.9rem;
+        letter-spacing: 0.5px;
     }
 
-    .sensor-item {
-        min-height: 120px;
-        padding: 1rem;
+    /* Ajustar todos los estados de sensores */
+    .sensor-value {
+        font-size: 1.2rem;
+    }
+        }
+
+        /* Ajustes adicionales para pantallas muy pequeñas */
+        @media (max-width: 480px) {
+            .sensor-grid {
+                padding: 0.75rem;
+            }
+
+            .sensors-content {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.75rem;
+                padding: 0.75rem;
+            }
+
+            .sensor-item.danger .sensor-value {
+        font-size: 0.8rem;
+        letter-spacing: 0;
     }
 
-    .third-panel {
-        transform: translate(-50%, -50%) scale(0.9);
+    .sensor-value {
+        font-size: 1rem;
     }
-}
+        }
 
-@media screen and (max-height: 600px) {
-    .sensor-grid {
-        transform: translate(-50%, -50%) scale(0.8);
-    }
+        /* Ajustes para orientación landscape en móviles */
+        @media (max-height: 480px) and (orientation: landscape) {
+            .sensor-grid {
+                padding: 0.5rem;
+            }
 
-    .sensors-content {
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-        gap: 0.8rem;
-    }
-
-    .sensor-item {
-        min-height: 100px;
-        padding: 0.8rem;
-    }
-}
+            .sensors-content {
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+                max-height: 100vh;
+                overflow-y: auto;
+                padding: 0.5rem;
+            }
+        }
 
 .third-panel {
     display: none;
@@ -1385,27 +1471,7 @@ body::before {
             justify-content: center;
             align-items: center;
             gap: 2rem;
-}
-
-/* Asegurarse que el widget-column está centrado dentro del third-panel */
-.third-panel .widget-column {
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-    width: 100%;
-    align-items: center;
-}
-
-/* Asegurarse que las filas de widgets están centradas */
-.third-panel .widget-row {
-    display: flex;
-    gap: 2rem;
-    justify-content: center;
-    align-items: flex-start;
-    width: 100%;
-}
-
-        .weather-widget {
+}        .weather-widget {
             position: relative;
             width: 400px;
             height: 300px;
@@ -1724,6 +1790,154 @@ body::before {
             margin-top: 1rem;
         }
         
+        @keyframes fadeIn {
+            from { 
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+    .third-panel {
+        padding: 0.5rem;
+        gap: 0.5rem;
+        height: auto;
+    }
+
+    .widget-column {
+        width: 100%;
+        gap: 0.5rem;
+    }
+
+    .widget-row {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+        width: 100%;
+    }
+
+    .weather-widget,
+    .wind-widget,
+    .precipitation-widget,
+    
+    .air-quality-widget,
+    .uv-widget,
+    .weather-condition-widget {
+        width: 100%;
+        height: 150px;
+        min-height: unset;
+        padding: 1rem;
+    }
+    .visibility-widget{
+          width: 100%;
+        height: 200px;
+        min-height: unset;
+        padding: 1rem;
+    }
+
+    .wind-widget {
+        grid-column: span 2;
+        height: 180px;
+    }
+
+    .temperature,
+    .wind-speed,
+    .precipitation-chance,
+    .visibility-value,
+    .uv-value {
+        font-size: 2.5rem;
+        letter-spacing: -2px;
+    }
+
+    .title {
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .wind-details {
+        gap: 1rem;
+        margin-top: 0.5rem;
+    }
+
+    .wind-value {
+        font-size: 1.2rem;
+    }
+
+    .wind-label {
+        font-size: 0.9rem;
+    }
+
+    .weather-icon {
+        width: 40%;
+        height: 40%;
+    }
+
+    .aqi-description {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .visibility-unit,
+    .precipitation-label,
+    .uv-description {
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+    }
+
+    .air-quality-scale {
+        width: 90%;
+    }
+
+    .pollutant-details {
+        display: none;
+    }
+
+    .weather-condition-widget {
+        aspect-ratio: 1;
+        width: 100%;
+        height: auto;
+        border-radius: 50%;
+    }
+}
+
+@media (max-width: 480px) {
+    .third-panel {
+        padding: 0.25rem;
+    }
+
+    .temperature,
+    .wind-speed,
+    .precipitation-chance,
+    .visibility-value,
+    .uv-value {
+        font-size: 2rem;
+    }
+
+    .title {
+        font-size: 0.9rem;
+    }
+
+    .wind-details {
+        gap: 0.75rem;
+    }
+
+    .wind-value {
+        font-size: 1rem;
+    }
+
+    .wind-label {
+        font-size: 0.8rem;
+    }
+    .connection-status {
+
+    display: none !important;
+  
+}
+}
         @keyframes fadeIn {
             from { 
                 opacity: 0;

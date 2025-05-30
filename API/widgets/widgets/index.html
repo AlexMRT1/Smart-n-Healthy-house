@@ -1,4 +1,12 @@
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <div class="bottom-widgets-container">
         <!-- Widget Estado General -->
         <div class="mini-widget">
@@ -479,7 +487,113 @@
             font-size: 0.9rem;
         }
 
-</style>
+        @media screen and (max-width: 768px) {
+    .bottom-widgets-container {
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        padding: 10px;
+        bottom: 0;
+    }
+
+    .mini-widget {
+        width: 90%;
+        height: 140px;
+        padding: 1rem;
+    }
+
+    .widget-header {
+        margin-bottom: 0.5rem;
+    }
+
+    .security-modal-content {
+        flex-direction: column;
+    }
+
+    .security-camera-preview {
+        width: 100%;
+    }
+
+    .modal-content {
+        width: 95%;
+        padding: 1rem;
+        margin: 10px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .bottom-widgets-container {
+        width: 96%;
+        padding: 5px;
+        gap: 8px;
+        bottom: 0;
+    }
+
+    .mini-widget {
+        width: 98%;
+        height: 100px;
+        padding: 0.8rem;
+        margin: 0 auto;
+        border-radius: 15px;
+    }
+
+    .widget-header {
+        margin-bottom: 0.5rem;
+    }
+
+    .widget-icon {
+        width: 24px;
+        height: 24px;
+    }
+
+    .widget-title {
+        font-size: 0.9rem;
+    }
+
+    .status-text {
+        font-size: 0.8rem;
+    }
+
+    .status-indicator {
+        margin-top: 0.3rem;
+        gap: 5px;
+    }
+
+    .notification-count {
+        font-size: 2rem;
+        margin: 0.3rem 0;
+    }
+
+    .security-status {
+        font-size: 1rem;
+        padding: 0.3rem;
+        margin: 0.3rem 0;
+    }
+
+    .modal-content {
+        width: 98%;
+        padding: 1rem;
+        margin: 5px;
+    }
+
+    .notification-card {
+        padding: 0.8rem;
+        margin-bottom: 0.8rem;
+    }
+
+    .security-item {
+        padding: 0.8rem;
+    }
+
+    .security-item-info h3 {
+        font-size: 1rem;
+    }
+
+    .security-item-info p {
+        font-size: 0.8rem;
+    }
+}
+    </style>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Selección de elementos
@@ -514,3 +628,5 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+</body>
+</html>
