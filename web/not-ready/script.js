@@ -330,4 +330,32 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         console.error('❌ AI Section: Elementos no encontrados o GSAP no disponible');
     }
+    
+    // Funcionalidad de Tabs para Hardware Details (simplificada)
+    const hardwareTabs = document.querySelectorAll('.hardware-tab');
+    const hardwarePanels = document.querySelectorAll('.hardware-panel');
+    
+    if (hardwareTabs.length > 0 && hardwarePanels.length > 0) {
+        hardwareTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const targetTab = tab.getAttribute('data-hardware-tab');
+                
+                // Remover clase active de todos los tabs y panels
+                hardwareTabs.forEach(t => t.classList.remove('active'));
+                hardwarePanels.forEach(p => p.classList.remove('active'));
+                
+                // Agregar clase active al tab clickeado
+                tab.classList.add('active');
+                  // Mostrar el panel correspondiente
+                const targetPanel = document.getElementById(`${targetTab}-details`);
+                if (targetPanel) {
+                    targetPanel.classList.add('active');
+                }
+            });
+        });
+        
+        console.log('✅ Hardware Tabs configurados correctamente');
+    } else {
+        console.log('ℹ️ Hardware Tabs: Elementos no encontrados (pueden no estar en esta página)');
+    }
 });
