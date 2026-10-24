@@ -15,14 +15,44 @@ El servidor de la casa queda en el puerto 3000. No hace falta MQTT para arrancar
 
 Certificados del dispositivo, si vas a usar MQTT, van en `secrets/mqtt.key`, `secrets/mqtt.cert` y `secrets/mqtt.ca`. Esa carpeta no se sube.
 
-Variables que el codigo lee. Los valores se quedan en tu maquina:
+## Tests
 
-- `PORT`
-- `MQTT_HOST`, `MQTT_PORT`, `MQTT_PRIVATE_KEY_PATH`, `MQTT_CERT_PATH`, `MQTT_CA_PATH`
-- `ACCUWEATHER_API_KEY` (puerto 3004)
-- `GOOGLE_API_KEY` (puerto 5000)
-- `SMTP_USER`, `SMTP_PASS` (puerto 3002)
-- `FIREBASE_PRIVATE_KEY`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PROJECT_ID` (puerto 3003)
+`npm test` corre la suite. `npm run test:coverage` exige al menos 70% de lineas en el dominio, la validacion, los logs y las metricas.
+
+## Variables
+
+Los nombres estan en `.env.example`. Copia ese archivo a `.env` y llena los valores en tu maquina. El ejemplo no trae secretos.
+
+```
+PORT=
+CORS_ORIGIN=
+MQTT_HOST=
+MQTT_PORT=
+MQTT_PRIVATE_KEY=
+MQTT_PRIVATE_KEY_PATH=
+MQTT_CERT=
+MQTT_CERT_PATH=
+MQTT_CA=
+MQTT_CA_PATH=
+ACCUWEATHER_API_KEY=
+GOOGLE_API_KEY=
+CONTEXT=
+SMTP_USER=
+SMTP_PASS=
+SMTP_TLS_INSECURE=
+FIREBASE_API_KEY=
+FIREBASE_AUTH_DOMAIN=
+FIREBASE_PROJECT_ID=
+FIREBASE_STORAGE_BUCKET=
+FIREBASE_MESSAGING_SENDER_ID=
+FIREBASE_APP_ID=
+FIREBASE_PRIVATE_KEY=
+FIREBASE_CLIENT_EMAIL=
+```
+
+Puertos: casa 3000, verificacion 3002, auth 3003, clima 3004, Gemini 5000.
+
+Como contribuir: `CONTRIBUTING.md`. Cambios: `CHANGELOG.md`.
 
 ## Arquitectura
 

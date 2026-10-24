@@ -4,6 +4,8 @@ const nodemailer = require('nodemailer');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const { generateVerificationCode, assessVerification } = require('./codes');
+const { validate } = require('../../../validate');
+const logger = require('../../../log');
 
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 require('dotenv').config();
@@ -36,8 +38,18 @@ const transporter = nodemailer.createTransport({
 // Ruta para enviar el código de verificación
 app.post('/send-verification', async (req, res) => {
     try {
+        const check = validate(req.body, {
+            email: { required: true, type: 'string' }
+        });
+        if (!check.ok) {
+            return res.status(400).json({
+                success: false,
+                message: check.errors[0]
+            });
+        }
+
         const { email } = req.body;
-        
+
         if (!email) {
             return res.status(400).json({
                 success: false,
@@ -96,7 +108,7 @@ app.post('/send-verification', async (req, res) => {
             message: 'Código de verificación enviado'
         });
     } catch (error) {
-        console.error('Error al enviar el correo:', error);
+        logger.error('verification mail failed', { error: error.message });
         res.status(500).json({ 
             success: false, 
             message: 'Error al enviar el código de verificación'
@@ -106,6 +118,14 @@ app.post('/send-verification', async (req, res) => {
 
 // Add this new endpoint after your existing /send-verification endpoint
 app.post('/verify-code', (req, res) => {
+    const check = validate(req.body, {
+        email: { required: true, type: 'string' },
+        code: { required: true }
+    });
+    if (!check.ok) {
+        return res.status(400).json({ success: false, message: check.errors[0] });
+    }
+
     const { email, code } = req.body;
     const result = assessVerification({
         email,
@@ -122,5 +142,5 @@ app.post('/verify-code', (req, res) => {
 
 const PORT = 3002;
 app.listen(PORT, () => {
-    console.log(`Servidor corriendo en puerto ${PORT}`);
+    logger.info('verification server listening', { port: PORT });
 });

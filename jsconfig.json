@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+    "target": "ES2022",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "strict": false,
+    "skipLibCheck": true,
+    "types": []
+  },
+  "include": [
+    "API/server/domain/**/*.js",
+    "API/server/validate.js",
+    "API/server/log.js",
+    "API/server/metrics.js",
+    "API/server/http.js"
+  ]
+}

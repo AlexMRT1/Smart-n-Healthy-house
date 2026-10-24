@@ -19,12 +19,25 @@ test("the house API answers without MQTT credentials", async () => {
         const health = await fetch(`${base}/health`);
         assert.equal(health.status, 200);
 
+        const metrics = await fetch(`${base}/metrics`);
+        assert.equal(metrics.status, 200);
+        const counters = await metrics.json();
+        assert.equal(typeof counters.requests, "number");
+        assert.ok(counters.requests >= 1);
+
         const rejected = await fetch(`${base}/report-incident`, {
             method: "POST",
             headers: { "content-type": "application/json" },
             body: "[]"
         });
         assert.equal(rejected.status, 400);
+
+        const missingTitle = await fetch(`${base}/report-incident`, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ success: false })
+        });
+        assert.equal(missingTitle.status, 400);
 
         const created = await fetch(`${base}/report-incident`, {
             method: "POST",
