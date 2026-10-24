@@ -72,6 +72,10 @@ app.post('/api/chat', async (req, res) => {
     }
 });
 
+app.get('/health', (req, res) => {
+    res.json({ ok: true });
+});
+
 app.get('/api/test', (req, res) => {
     res.json({
         status: 'success',
@@ -104,6 +108,10 @@ app.post('/api/updateStates', (req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-    logger.info('gemini server listening', { port: PORT });
-});
+if (require.main === module) {
+    app.listen(PORT, () => {
+        logger.info('gemini server listening', { port: PORT });
+    });
+}
+
+module.exports = { app };
