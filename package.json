@@ -1,12 +1,14 @@
 {
   "name": "smart-n-healthy-home",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "main": "",
   "scripts": {
     "start": "node API/server/index.js",
     "dev": "nodemon API/server/index.js",
     "test": "node --test test/*.test.js test/*.test.mjs",
+    "test:coverage": "c8 node --test test/*.test.js test/*.test.mjs",
     "lint": "eslint .",
+    "typecheck": "tsc -p jsconfig.json --pretty false",
     "build": "node scripts/check.js",
     "capacitor:sync": "npx cap sync",
     "capacitor:open:android": "npx cap open android",
@@ -28,29 +30,43 @@
     "@google/generative-ai": "^0.24.1",
     "axios": "^1.9.0",
     "bcrypt": "^6.0.0",
-    "bcryptjs": "^3.0.2",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
-    "crypto": "^1.0.1",
     "dompurify": "^3.2.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "express-rate-limit": "^7.5.0",
+    "express-validator": "^7.3.2",
     "faceapi": "^1.0.1",
-    "firebase": "^11.7.1",
     "firebase-admin": "^13.4.0",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
     "mqtt": "^5.13.0",
     "node-wifi": "^2.0.16",
-    "nodemailer": "^7.0.3",
+    "nodemailer": "^10.2.1",
     "socket.io": "^4.8.1",
     "spotify-web-api-node": "^5.0.2"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "c8": "^12.0.0",
     "eslint": "^10.13.0",
     "globals": "^17.13.0",
-    "nodemon": "^3.1.10"
+    "nodemon": "^3.1.10",
+    "typescript": "^7.0.2"
+  },
+  "c8": {
+    "include": [
+      "API/server/domain/**/*.js",
+      "API/server/validate.js",
+      "API/server/log.js",
+      "API/server/metrics.js",
+      "API/server/http.js"
+    ],
+    "reporter": [
+      "text"
+    ],
+    "check-coverage": true,
+    "lines": 70
   }
 }
