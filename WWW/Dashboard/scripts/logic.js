@@ -48,12 +48,17 @@ function analyzeStates(states) {
         status = "Precaución";
     }
 
-    if (states.gas === "Detectada") {
+    if (states.gas === true || states.gas === "Detectada") {
         alertCount++;
         status = "Crítico";
     }
 
-    if (states.fire === "Detectado") {
+    if (states.fire === true || states.fire === "Detectado") {
+        alertCount++;
+        status = "Crítico";
+    }
+
+    if (states.flood === true || states.flood === "Detectada") {
         alertCount++;
         status = "Crítico";
     }

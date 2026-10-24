@@ -56,6 +56,11 @@ test("board status counts gas and fire above temperature", () => {
     assert.equal(critical.generalStatus, "Crítico");
     assert.equal(critical.alerts, "3 alertas");
     assert.equal(analyzeStates({ temperature: 20, gas: "detectada", fire: "Detectado" }).alerts, "1 alertas");
+
+    const fromSensors = analyzeStates({ temperature: 22, gas: true, fire: true, flood: "Detectada" });
+    assert.equal(fromSensors.generalStatus, "Crítico");
+    assert.equal(fromSensors.alerts, "3 alertas");
+    assert.equal(analyzeStates({ temperature: 22, gas: false, fire: false, flood: "No detectada" }).alerts, "0 alertas");
 });
 
 test("sensor labels, payloads and connection copy", () => {
