@@ -3,8 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const bcrypt = require("bcrypt");
 const db = require("./firebase");
-const { Storage } = require('@google-cloud/storage');
-const path = require('path');
+const { hasRequiredRegisterFields, normalizeLocation, validatePassword } = require("./validation");
 
 const app = express();
 
@@ -18,29 +17,20 @@ app.use(cors({
 app.use(express.json());
 app.use(express.static('sign-in'));
 
-const USERS_DOC_ID = "GuJNZZyq5M5QW6aAq8Rv";
-
-// Middleware de validación
-const validatePassword = (password) => {
-  const minLength = 8;
-  const hasUpperCase = /[A-Z]/.test(password);
-  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-  const hasNumber = /[0-9]/.test(password);
-
-  return password.length >= minLength && 
-         hasUpperCase && 
-         hasSpecialChar && 
-         hasNumber;
-};
-
 app.post("/register", async (req, res) => {
   try {
     const { email, password, nombre, uid, location } = req.body;
 
     // Validaciones
-    if (!email || !password || !nombre || !uid) {
+    if (!hasRequiredRegisterFields({ email, password, nombre, uid })) {
       return res.status(400).json({ 
         message: "Todos los campos son requeridos" 
+      });
+    }
+
+    if (!validatePassword(password)) {
+      return res.status(400).json({
+        message: "La contraseña debe tener 8 caracteres, una mayúscula, un número y un símbolo"
       });
     }
 
@@ -59,11 +49,7 @@ app.post("/register", async (req, res) => {
       faceData: null,
       lastFaceUpdate: null,
       // Guardar la ubicación del usuario
-      location: {
-        country: location?.country || "",
-        state: location?.state || "",
-        city: location?.city || ""
-      },
+      location: normalizeLocation(location),
       createdAt: new Date().toISOString()
     });
 

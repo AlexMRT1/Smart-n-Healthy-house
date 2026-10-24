@@ -5,8 +5,9 @@
   "scripts": {
     "start": "node API/server/index.js",
     "dev": "nodemon API/server/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "echo \"npx run build\"",
+    "test": "node --test test/*.test.js test/*.test.mjs",
+    "lint": "eslint .",
+    "build": "node scripts/check.js",
     "capacitor:sync": "npx cap sync",
     "capacitor:open:android": "npx cap open android",
     "capacitor:open:ios": "npx cap open ios"
@@ -14,7 +15,10 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "House monitor for sensors, incidents and local services.",
+  "engines": {
+    "node": ">=20"
+  },
   "dependencies": {
     "@aws-sdk/client-cognito-identity-provider": "^3.808.0",
     "@aws-sdk/client-dynamodb": "^3.808.0",
@@ -44,6 +48,9 @@
     "spotify-web-api-node": "^5.0.2"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.13.0",
+    "globals": "^17.13.0",
     "nodemon": "^3.1.10"
   }
 }

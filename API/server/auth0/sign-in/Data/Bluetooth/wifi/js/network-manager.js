@@ -13,14 +13,7 @@ class NetworkManager {
         const div = document.createElement('div');
         div.className = 'network-item';
         
-        let strengthClass = '';
-        if (network.strength >= 70) {
-            strengthClass = 'strength-high';
-        } else if (network.strength >= 40) {
-            strengthClass = 'strength-medium';
-        } else {
-            strengthClass = 'strength-low';
-        }
+        const strengthClass = classifySignalStrength(network.strength);
 
         div.innerHTML = `
             <div class="network-header">

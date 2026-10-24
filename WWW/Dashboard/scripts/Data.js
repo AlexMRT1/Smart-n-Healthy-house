@@ -68,24 +68,7 @@ class DeviceDataManager {
         }
 
         const now = new Date();
-        const diff = now - this.lastUpdate;
-        const seconds = Math.floor(diff / 1000);
-        
-        let text = '';
-        if (seconds < 30) {
-            text = 'Hace un momento';
-        } else if (seconds < 60) {
-            text = `Hace ${seconds} segundos`;
-        } else if (seconds < 3600) {
-            const minutes = Math.floor(seconds / 60);
-            text = `Hace ${minutes} ${minutes === 1 ? 'minuto' : 'minutos'}`;
-        } else if (seconds < 86400) {
-            const hours = Math.floor(seconds / 3600);
-            text = `Hace ${hours} ${hours === 1 ? 'hora' : 'horas'}`;
-        } else {
-            const days = Math.floor(seconds / 86400);
-            text = `Hace ${days} ${days === 1 ? 'día' : 'días'}`;
-        }
+        const text = HouseLogic.formatRelativeTime(now - this.lastUpdate);
 
         // Solo actualizar si el texto ha cambiado
         if (this.elements.lastUpdateText.textContent !== text) {
@@ -170,7 +153,7 @@ class DeviceDataManager {
         console.log('Socket.IO connection closed');
         this.updateConnectionStatus('disconnected');
         
-        if (this.reconnectAttempts < this.maxReconnectAttempts) {
+        if (HouseLogic.canReconnect(this.reconnectAttempts, this.maxReconnectAttempts)) {
             this.reconnectAttempts++;
             console.log(`Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})...`);
             setTimeout(() => this.initializeSocket(), this.reconnectDelay);
@@ -191,10 +174,7 @@ class DeviceDataManager {
         }
 
         try {
-            const payload = {
-                topic,
-                message: typeof message === 'string' ? message : JSON.stringify(message)
-            };
+            const payload = HouseLogic.buildPublishPayload(topic, message);
             
             this.socket.emit('sensorUpdate', payload);
             return true;
@@ -205,17 +185,7 @@ class DeviceDataManager {
     }
 
     updateStates(data) {
-        const humidityValue = data.humedad || data.humidity;
-        if (humidityValue === undefined || humidityValue === null) {
-            this.currentStates.humidity = "--";
-        } else {
-            const humidityNum = parseFloat(humidityValue);
-            if (isNaN(humidityNum)) {
-                this.currentStates.humidity = "--";
-            } else {
-                this.currentStates.humidity = `${humidityNum.toFixed(1)}%`;
-            }
-        }
+        this.currentStates.humidity = HouseLogic.formatHumidityFromReading(data);
 
         Object.entries(data).forEach(([key, value]) => {
             if (key !== 'humidity') {
@@ -227,26 +197,9 @@ class DeviceDataManager {
     }
 
     analyzeStates() {
-        let alertCount = 0;
-        let status = "Normal";
-
-        if (this.currentStates.temperature > 35) {
-            alertCount++;
-            status = "Precaución";
-        }
-
-        if (this.currentStates.gas === "Detectada") {
-            alertCount++;
-            status = "Crítico";
-        }
-
-        if (this.currentStates.fire === "Detectado") {
-            alertCount++;
-            status = "Crítico";
-        }
-
-        this.currentStates.alerts = `${alertCount} alertas`;
-        this.currentStates.generalStatus = status;
+        const result = HouseLogic.analyzeStates(this.currentStates);
+        this.currentStates.alerts = result.alerts;
+        this.currentStates.generalStatus = result.generalStatus;
     }
 
     updateUI(data) {
@@ -257,26 +210,20 @@ class DeviceDataManager {
 
         // Mapeo de claves de datos a data-sensor
         const sensorMap = {
-            temperature: { key: 'temperature', suffix: '°' },
-            humidity: { key: 'humidity', suffix: '%' },
-            gas: { key: 'gas', custom: v => v === true || v === "Detectada" ? "Detectada" : "No detectada" },
-            fire: { key: 'fire', custom: v => v === true || v === "Detectado" ? "Detectado" : "No detectado" },
-            water: { key: 'water', suffix: '%' },
-            camera: { key: 'camera' },
-            security: { key: 'security' }
+            temperature: 'temperature',
+            humidity: 'humidity',
+            gas: 'gas',
+            fire: 'fire',
+            water: 'water',
+            camera: 'camera',
+            security: 'security'
         };
 
-        Object.entries(sensorMap).forEach(([sensor, config]) => {
+        Object.entries(sensorMap).forEach(([sensor, key]) => {
             const el = document.querySelector(`.sensor-value[data-sensor="${sensor}"]`);
-            let value = data[config.key];
+            const value = data[key];
             if (el !== null && value !== undefined) {
-                if (config.custom) {
-                    el.textContent = config.custom(value);
-                } else if (config.suffix) {
-                    el.textContent = `${value}${config.suffix}`;
-                } else {
-                    el.textContent = value;
-                }
+                el.textContent = HouseLogic.formatSensorText(sensor, value);
             }
         });
 
@@ -378,25 +325,7 @@ class DeviceDataManager {
         
         if (!statusDot || !statusText) return;
 
-        const states = {
-            connecting: {
-                dot: '#FFA500',  // Naranja
-                text: 'Conectando...',
-                color: '#FFA500'
-            },
-            connected: {
-                dot: '#4CAF50',  // Verde
-                text: 'Conectado',
-                color: '#1a1a1a' // Negro
-            },
-            disconnected: {
-                dot: '#FF5252',  // Rojo
-                text: 'Desconectado',
-                color: '#FF5252'
-            }
-        };
-
-        const state = states[status] || states.disconnected;
+        const state = HouseLogic.connectionPresentation(status);
         
         statusDot.style.backgroundColor = state.dot;
         statusText.textContent = state.text;

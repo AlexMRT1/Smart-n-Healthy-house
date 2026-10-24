@@ -1,7 +1,13 @@
 const express = require('express');
+const path = require('path');
 const nodemailer = require('nodemailer');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
+const { generateVerificationCode, assessVerification } = require('./codes');
+
+require('dotenv').config({ path: path.join(__dirname, '.env') });
+require('dotenv').config();
+
 const app = express();
 
 // Add CORS middleware
@@ -19,18 +25,13 @@ const transporter = nodemailer.createTransport({
     port: 587, // IONOS SMTP port
     secure: false, // true for 465, false for other ports
     auth: {
-        user: 'no-reply@smartnhealthyhouse.com',
-        pass: 'W6CtBIgVB6ynns' // Replace with actual password
+        user: process.env.SMTP_USER || 'no-reply@smartnhealthyhouse.com',
+        pass: process.env.SMTP_PASS
     },
     tls: {
-        rejectUnauthorized: false // Only use during development
+        rejectUnauthorized: process.env.SMTP_TLS_INSECURE !== 'true'
     }
 });
-
-// Función para generar código aleatorio de 5 dígitos
-function generateVerificationCode() {
-    return Math.floor(10000 + Math.random() * 90000).toString();
-}
 
 // Ruta para enviar el código de verificación
 app.post('/send-verification', async (req, res) => {
@@ -41,6 +42,13 @@ app.post('/send-verification', async (req, res) => {
             return res.status(400).json({
                 success: false,
                 message: 'Se requiere un correo electrónico'
+            });
+        }
+
+        if (!process.env.SMTP_PASS) {
+            return res.status(503).json({
+                success: false,
+                message: 'El correo no esta configurado'
             });
         }
 
@@ -99,46 +107,17 @@ app.post('/send-verification', async (req, res) => {
 // Add this new endpoint after your existing /send-verification endpoint
 app.post('/verify-code', (req, res) => {
     const { email, code } = req.body;
-
-    if (!email || !code) {
-        return res.status(400).json({
-            success: false,
-            message: 'Se requiere email y código'
-        });
-    }
-
-    const storedVerification = app.locals.verificationCodes?.[email];
-    
-    if (!storedVerification) {
-        return res.status(400).json({
-            success: false,
-            message: 'No hay código de verificación pendiente'
-        });
-    }
-
-    // Check if code has expired (10 minutes)
-    const tenMinutes = 10 * 60 * 1000;
-    if (Date.now() - storedVerification.timestamp > tenMinutes) {
-        delete app.locals.verificationCodes[email];
-        return res.status(400).json({
-            success: false,
-            message: 'El código ha expirado'
-        });
-    }
-
-    if (storedVerification.code === code) {
-        // Code is valid
-        delete app.locals.verificationCodes[email]; // Clean up used code
-        return res.json({
-            success: true,
-            message: 'Verificación exitosa'
-        });
-    }
-
-    res.status(400).json({
-        success: false,
-        message: 'Código incorrecto'
+    const result = assessVerification({
+        email,
+        code,
+        record: app.locals.verificationCodes?.[email]
     });
+
+    if (result.remove && app.locals.verificationCodes) {
+        delete app.locals.verificationCodes[email];
+    }
+
+    return res.status(result.status).json(result.body);
 });
 
 const PORT = 3002;

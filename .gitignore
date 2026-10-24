@@ -1,2 +1,7 @@
-node_modules
-.history
+node_modules/
+.history/
+secrets/
+*.pem.key
+.env
+**/.env
+**/*firebase-adminsdk*.json

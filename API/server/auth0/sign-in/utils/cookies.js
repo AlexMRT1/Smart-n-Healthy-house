@@ -1,7 +1,9 @@
+import { buildSetCookie, readCookieValue, buildDeleteCookie } from './cookieFormat.mjs';
+
 export function setCookie(name, value, days = 7) {
   try {
     const expires = new Date(Date.now() + days * 864e5).toUTCString();
-    document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Strict`;
+    document.cookie = buildSetCookie(name, value, expires);
     console.log(`Cookie set: ${name}`); // Debug log
   } catch (error) {
     console.error(`Error setting cookie ${name}:`, error);
@@ -10,11 +12,7 @@ export function setCookie(name, value, days = 7) {
 
 export function getCookie(name) {
   try {
-    const value = document.cookie
-      .split('; ')
-      .find(row => row.startsWith(`${name}=`))
-      ?.split('=')[1];
-    return value ? decodeURIComponent(value) : '';
+    return readCookieValue(document.cookie, name);
   } catch (error) {
     console.error(`Error getting cookie ${name}:`, error);
     return '';
@@ -22,7 +20,7 @@ export function getCookie(name) {
 }
 
 export function deleteCookie(name) {
-  document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
+  document.cookie = buildDeleteCookie(name);
 }
 
 export function checkCookies() {
