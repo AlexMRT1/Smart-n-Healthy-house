@@ -63,12 +63,18 @@ function createHouseApp() {
         state.systemStatus.incidents = filterIncidentsForToday(state.systemStatus.incidents);
     }
 
+    let mqttState = "disabled";
+
+    function runtime() {
+        return metrics.snapshot({ sockets: io.sockets.sockets.size, mqtt: mqttState });
+    }
+
     app.get("/health", (req, res) => {
-        res.json({ ok: true });
+        res.json({ ok: true, ...runtime() });
     });
 
     app.get("/metrics", (req, res) => {
-        res.json(metrics.snapshot());
+        res.json(runtime());
     });
 
     app.get("/status", (req, res) => {
@@ -127,7 +133,17 @@ function createHouseApp() {
         });
     });
 
-    return { app, server, io, state, cleanOldIncidents };
+    return {
+        app,
+        server,
+        io,
+        state,
+        cleanOldIncidents,
+        setMqtt(next) {
+            mqttState = next;
+            metrics.setMqtt(next);
+        }
+    };
 }
 
 function attachMqtt(house, credentials) {
@@ -144,7 +160,10 @@ function attachMqtt(house, credentials) {
         reconnectPeriod: 5000
     });
 
+    house.setMqtt("connecting");
+
     client.on("connect", () => {
+        house.setMqtt("connected");
         MQTT_TOPICS.forEach((topic) => {
             client.subscribe(topic, (err) => {
                 if (err) logger.error("mqtt subscribe failed", { topic, error: err.message });
@@ -153,7 +172,12 @@ function attachMqtt(house, credentials) {
     });
 
     client.on("error", (error) => {
+        house.setMqtt("error");
         logger.error("mqtt client failed", { error: error.message });
+    });
+
+    client.on("close", () => {
+        house.setMqtt("closed");
     });
 
     client.on("message", (topic, message) => {

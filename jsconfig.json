@@ -8,8 +8,10 @@
     "moduleResolution": "nodenext",
     "strict": false,
     "skipLibCheck": true,
+    "maxNodeModuleJsDepth": 0,
     "types": []
   },
+  "exclude": ["node_modules"],
   "include": [
     "API/server/domain/**/*.js",
     "API/server/validate.js",

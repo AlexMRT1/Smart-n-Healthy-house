@@ -1,4 +1,4 @@
-const { loadMqttCredentials } = require("../../API/server/credentials");
+const { loadMqttCredentials } = require("../API/server/credentials");
 
 const credentials = loadMqttCredentials();
 if (!credentials) {

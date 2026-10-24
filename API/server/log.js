@@ -1,22 +1,35 @@
-function write(level, message, fields = {}) {
-    const entry = {
-        time: new Date().toISOString(),
-        level,
-        message: message instanceof Error ? message.message : String(message),
-        ...fields
+const pino = require("pino");
+
+function createLogger(destination = process.stdout) {
+    const log = pino({
+        level: "info",
+        base: null,
+        messageKey: "message",
+        timestamp: pino.stdTimeFunctions.isoTime,
+        formatters: {
+            level(label) {
+                return { level: label };
+            }
+        }
+    }, destination);
+
+    function write(method, message, fields = {}) {
+        const text = message instanceof Error ? message.message : String(message);
+        log[method](fields, text);
+        return { level: method === "error" ? "error" : "info", message: text, ...fields };
+    }
+
+    return {
+        info(message, fields) {
+            return write("info", message, fields);
+        },
+        error(message, fields) {
+            return write("error", message, fields);
+        }
     };
-    const line = JSON.stringify(entry);
-    if (level === "error") console.error(line);
-    else console.log(line);
-    return entry;
 }
 
-function info(message, fields) {
-    return write("info", message, fields);
-}
+const logger = createLogger();
+logger.createLogger = createLogger;
 
-function error(message, fields) {
-    return write("error", message, fields);
-}
-
-module.exports = { info, error };
+module.exports = logger;

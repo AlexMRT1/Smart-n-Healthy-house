@@ -18,6 +18,11 @@ test("the house API answers without MQTT credentials", async () => {
         const base = `http://127.0.0.1:${port}`;
         const health = await fetch(`${base}/health`);
         assert.equal(health.status, 200);
+        const healthBody = await health.json();
+        assert.equal(healthBody.ok, true);
+        assert.equal(typeof healthBody.uptimeSeconds, "number");
+        assert.equal(healthBody.sockets, 0);
+        assert.equal(healthBody.mqtt, "disabled");
 
         const metrics = await fetch(`${base}/metrics`);
         assert.equal(metrics.status, 200);

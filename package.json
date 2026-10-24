@@ -1,12 +1,12 @@
 {
   "name": "smart-n-healthy-home",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "main": "",
   "scripts": {
     "start": "node API/server/index.js",
     "dev": "nodemon API/server/index.js",
-    "test": "node --test test/*.test.js test/*.test.mjs",
-    "test:coverage": "c8 node --test test/*.test.js test/*.test.mjs",
+    "test": "node --test",
+    "test:coverage": "c8 node --test",
     "lint": "eslint .",
     "typecheck": "tsc -p jsconfig.json --pretty false",
     "build": "node scripts/check.js",
@@ -44,6 +44,7 @@
     "mqtt": "^5.13.0",
     "node-wifi": "^2.0.16",
     "nodemailer": "^10.2.1",
+    "pino": "^9.14.0",
     "socket.io": "^4.8.1",
     "spotify-web-api-node": "^5.0.2"
   },
