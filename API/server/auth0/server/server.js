@@ -1,11 +1,19 @@
 require("dotenv").config();
+const path = require("path");
 const express = require("express");
 const bcrypt = require("bcrypt");
-const db = require("./firebase");
+const { firestore } = require("./firebase");
 const { hasRequiredRegisterFields, normalizeLocation, validatePassword } = require("./validation");
 const { applyApiDefaults } = require("../../http");
 const { validate } = require("../../validate");
 const logger = require("../../log");
+
+function fail(res, error, fallback) {
+    const status = error.statusCode || 500;
+    res.status(status).json({
+        message: status === 503 ? "Firebase no esta configurado" : (error.message || fallback)
+    });
+}
 
 const app = express();
 
@@ -14,7 +22,11 @@ applyApiDefaults(app, {
   methods: ["GET", "POST"],
   credentials: true
 });
-app.use(express.static("sign-in"));
+app.get("/health", (req, res) => {
+  res.json({ ok: true });
+});
+
+app.use(express.static(path.join(__dirname, "..", "sign-in")));
 
 app.post("/register", async (req, res) => {
   try {
@@ -46,7 +58,7 @@ app.post("/register", async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Crear documento con el UID como nombre en la colección Users
-    await db.collection("Users").doc(uid).set({
+    await firestore().collection("Users").doc(uid).set({
       Email: email,
       Password: hashedPassword,
       Nombre: nombre,
@@ -69,9 +81,7 @@ app.post("/register", async (req, res) => {
 
   } catch (err) {
     logger.error("register failed", { error: err.message });
-    res.status(500).json({ 
-      message: err.message || "Error al registrar usuario" 
-    });
+    fail(res, err, "Error al registrar usuario");
   }
 });
 
@@ -88,7 +98,7 @@ app.post("/social-auth", async (req, res) => {
     }
 
     const { uid, email, nombre, photoURL } = req.body;
-    const usersRef = db.collection("Users");
+    const usersRef = firestore().collection("Users");
 
     // Get user location
     let location = { country: "", state: "", city: "" };
@@ -131,8 +141,8 @@ app.post("/social-auth", async (req, res) => {
 
   } catch (err) {
     logger.error("social auth failed", { error: err.message });
-    res.status(500).json({ 
-      message: "Error en autenticación" 
+    res.status(err.statusCode || 500).json({
+      message: err.statusCode === 503 ? "Firebase no esta configurado" : "Error en autenticación"
     });
   }
 });
@@ -141,7 +151,7 @@ app.post("/social-auth", async (req, res) => {
 app.get("/verify-user/:uid", async (req, res) => {
   try {
     const { uid } = req.params;
-    const userDoc = await db.collection("Users").doc(uid).get();
+    const userDoc = await firestore().collection("Users").doc(uid).get();
     
     res.json({ 
       exists: userDoc.exists 
@@ -149,8 +159,8 @@ app.get("/verify-user/:uid", async (req, res) => {
     
   } catch (error) {
     logger.error("verify user failed", { error: error.message });
-    res.status(500).json({ 
-      message: "Error verificando usuario",
+    res.status(error.statusCode || 500).json({
+      message: error.statusCode === 503 ? "Firebase no esta configurado" : "Error verificando usuario",
       exists: false
     });
   }
@@ -176,7 +186,7 @@ app.post("/save-face-data", async (req, res) => {
         }
 
         // Obtener referencia al documento del usuario
-        const userRef = db.collection("Users").doc(uid);
+        const userRef = firestore().collection("Users").doc(uid);
         const userDoc = await userRef.get();
 
         if (!userDoc.exists) {
@@ -200,9 +210,9 @@ app.post("/save-face-data", async (req, res) => {
 
     } catch (error) {
         logger.error("save face data failed", { error: error.message });
-        res.status(500).json({
+        res.status(error.statusCode || 500).json({
             success: false,
-            message: "Error al guardar datos faciales"
+            message: error.statusCode === 503 ? "Firebase no esta configurado" : "Error al guardar datos faciales"
         });
     }
 });
@@ -218,7 +228,11 @@ app.get('/config', (req, res) => {
   });
 });
 
-const PORT = 3003;  // Forzar el puerto 3003
-app.listen(PORT, () => {
-  logger.info("auth server listening", { port: PORT });
-});
+const PORT = Number(process.env.PORT || 3003);
+if (require.main === module) {
+  app.listen(PORT, () => {
+    logger.info("auth server listening", { port: PORT });
+  });
+}
+
+module.exports = { app };
