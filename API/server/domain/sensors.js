@@ -1,6 +1,6 @@
 // Reglas de sensores compartidas por el servidor MQTT
 
-function determineFloodStatus() {
+function determineFloodStatus(data) {
     return "No detectada";
 }
 
@@ -54,7 +54,7 @@ function normalizeSensorPayload(topic, rawText, now = new Date()) {
     const data = Object.keys(rawData).reduce((acc, key) => {
         acc[key.trim()] = rawData[key];
         return acc;
-    }, {});
+    }, /** @type {Record<string, any>} */ ({}));
 
     const sensorData = {
         temperatura: Number(data.temperatura),

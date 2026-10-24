@@ -2,10 +2,8 @@ const mqtt = require("mqtt");
 const express = require("express");
 const http = require("http");
 const path = require("path");
-const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 const socketIo = require("socket.io");
-const cors = require("cors");
 const { normalizeSensorPayload } = require("./domain/sensors");
 const {
     isToday,
@@ -15,6 +13,10 @@ const {
     incidentFromMqtt
 } = require("./domain/incidents");
 const { loadMqttCredentials } = require("./credentials");
+const { applyApiDefaults } = require("./http");
+const { incidentRules, rejectValidation } = require("./validate");
+const logger = require("./log");
+const metrics = require("./metrics");
 
 const PORT = Number(process.env.PORT || 3000);
 const MQTT_TOPICS = ["testeo", "/testeo", "esp32/sensor", "/report-incident"];
@@ -53,13 +55,7 @@ function createHouseApp() {
         transports: ["websocket", "polling"]
     });
 
-    app.use(helmet({
-        contentSecurityPolicy: false,
-        crossOriginEmbedderPolicy: false,
-        crossOriginResourcePolicy: { policy: "cross-origin" }
-    }));
-    app.use(cors({ origin: process.env.CORS_ORIGIN || "*" }));
-    app.use(express.json({ limit: "100kb" }));
+    applyApiDefaults(app);
     app.use(rateLimit({ windowMs: 60 * 1000, limit: 120, standardHeaders: true }));
     app.use(express.static(path.join(__dirname, "..", "..", "WWW", "Dashboard")));
 
@@ -69,6 +65,10 @@ function createHouseApp() {
 
     app.get("/health", (req, res) => {
         res.json({ ok: true });
+    });
+
+    app.get("/metrics", (req, res) => {
+        res.json(metrics.snapshot());
     });
 
     app.get("/status", (req, res) => {
@@ -84,7 +84,8 @@ function createHouseApp() {
         res.json(state.systemStatus);
     });
 
-    app.post("/report-incident", (req, res) => {
+    app.post("/report-incident", incidentRules, (req, res) => {
+        if (rejectValidation(req, res)) return;
         try {
             assertIncidentObject(req.body);
             const incident = incidentFromHttp(req.body);
@@ -92,6 +93,8 @@ function createHouseApp() {
             io.emit("newIncident", incident);
             res.json({ success: true, incident });
         } catch (error) {
+            metrics.fail();
+            logger.error("report-incident failed", { error: error.message });
             res.status(error.statusCode || 500).json({ success: false, error: error.message });
         }
     });
@@ -118,7 +121,8 @@ function createHouseApp() {
                 state.systemStatus.incidents.unshift(formattedIncident);
                 io.emit("newIncident", formattedIncident);
             } catch (error) {
-                console.error("Error processing incident:", error.message);
+                metrics.fail();
+                logger.error("socket incident failed", { error: error.message });
             }
         });
     });
@@ -143,13 +147,13 @@ function attachMqtt(house, credentials) {
     client.on("connect", () => {
         MQTT_TOPICS.forEach((topic) => {
             client.subscribe(topic, (err) => {
-                if (err) console.error(`Error subscribing to ${topic}:`, err.message);
+                if (err) logger.error("mqtt subscribe failed", { topic, error: err.message });
             });
         });
     });
 
     client.on("error", (error) => {
-        console.error("MQTT error:", error.message);
+        logger.error("mqtt client failed", { error: error.message });
     });
 
     client.on("message", (topic, message) => {
@@ -161,7 +165,8 @@ function attachMqtt(house, credentials) {
                 house.state.systemStatus.incidents.unshift(formattedIncident);
                 house.io.emit("newIncident", formattedIncident);
             } catch (error) {
-                console.error("Error processing incident:", error.message);
+                metrics.fail();
+                logger.error("mqtt incident failed", { error: error.message });
             }
             return;
         }
@@ -171,7 +176,8 @@ function attachMqtt(house, credentials) {
             house.state.sensorData = parsed.sensorData;
             house.io.emit("sensorUpdate", parsed.dashboardData);
         } catch (error) {
-            console.error("Error processing message:", error.message);
+            metrics.fail();
+            logger.error("mqtt message failed", { error: error.message });
         }
     });
 
@@ -197,7 +203,7 @@ function startHouseServer() {
     const credentials = loadMqttCredentials();
     const client = credentials ? attachMqtt(house, credentials) : null;
     if (!client) {
-        console.log("MQTT disabled. Add secrets/mqtt.key, mqtt.cert and mqtt.ca, or set the MQTT_* variables.");
+        logger.info("MQTT disabled. Add secrets/mqtt.key, mqtt.cert and mqtt.ca, or set the MQTT_* variables.");
     }
 
     scheduleCleanup(house);
@@ -206,7 +212,7 @@ function startHouseServer() {
     function shutdown(signal) {
         if (shuttingDown) return;
         shuttingDown = true;
-        console.log(`${signal} received. Closing the house server.`);
+        logger.info("closing the house server", { signal });
         if (client) client.end(false);
         house.io.close();
         house.server.close(() => process.exit(0));
@@ -217,7 +223,7 @@ function startHouseServer() {
     process.once("SIGINT", () => shutdown("SIGINT"));
 
     house.server.listen(PORT, () => {
-        console.log(`House server listening on port ${PORT}`);
+        logger.info("house server listening", { port: PORT });
     });
 
     return house;

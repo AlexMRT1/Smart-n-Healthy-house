@@ -1,24 +1,33 @@
 require("dotenv").config();
 const express = require("express");
-const cors = require("cors");
 const bcrypt = require("bcrypt");
 const db = require("./firebase");
 const { hasRequiredRegisterFields, normalizeLocation, validatePassword } = require("./validation");
+const { applyApiDefaults } = require("../../http");
+const { validate } = require("../../validate");
+const logger = require("../../log");
 
 const app = express();
 
-// CORS configuration
-app.use(cors({
-  origin: 'http://127.0.0.1:5500', // Specific origin instead of array
-  methods: ['GET', 'POST'],
+applyApiDefaults(app, {
+  origin: "http://127.0.0.1:5500",
+  methods: ["GET", "POST"],
   credentials: true
-}));
-
-app.use(express.json());
-app.use(express.static('sign-in'));
+});
+app.use(express.static("sign-in"));
 
 app.post("/register", async (req, res) => {
   try {
+    const check = validate(req.body, {
+      email: { required: true, type: "string" },
+      password: { required: true, type: "string" },
+      nombre: { required: true, type: "string" },
+      uid: { required: true, type: "string" }
+    });
+    if (!check.ok) {
+      return res.status(400).json({ message: check.errors[0] });
+    }
+
     const { email, password, nombre, uid, location } = req.body;
 
     // Validaciones
@@ -59,7 +68,7 @@ app.post("/register", async (req, res) => {
     });
 
   } catch (err) {
-    console.error('Error en registro:', err);
+    logger.error("register failed", { error: err.message });
     res.status(500).json({ 
       message: err.message || "Error al registrar usuario" 
     });
@@ -69,6 +78,15 @@ app.post("/register", async (req, res) => {
 // Add social login handler
 app.post("/social-auth", async (req, res) => {
   try {
+    const check = validate(req.body, {
+      uid: { required: true, type: "string" },
+      email: { required: true, type: "string" },
+      nombre: { required: true, type: "string" }
+    });
+    if (!check.ok) {
+      return res.status(400).json({ message: check.errors[0] });
+    }
+
     const { uid, email, nombre, photoURL } = req.body;
     const usersRef = db.collection("Users");
 
@@ -83,7 +101,7 @@ app.post("/social-auth", async (req, res) => {
         city: locationData.city
       };
     } catch (error) {
-      console.error('Error getting location:', error);
+      logger.error("location lookup failed", { error: error.message });
     }
 
     // Check if user exists
@@ -112,7 +130,7 @@ app.post("/social-auth", async (req, res) => {
     });
 
   } catch (err) {
-    console.error(err);
+    logger.error("social auth failed", { error: err.message });
     res.status(500).json({ 
       message: "Error en autenticación" 
     });
@@ -130,7 +148,7 @@ app.get("/verify-user/:uid", async (req, res) => {
     });
     
   } catch (error) {
-    console.error('Error verificando usuario:', error);
+    logger.error("verify user failed", { error: error.message });
     res.status(500).json({ 
       message: "Error verificando usuario",
       exists: false
@@ -140,6 +158,14 @@ app.get("/verify-user/:uid", async (req, res) => {
 
 app.post("/save-face-data", async (req, res) => {
     try {
+        const check = validate(req.body, {
+            uid: { required: true, type: "string" },
+            faceImage: { required: true, type: "string" }
+        });
+        if (!check.ok) {
+            return res.status(400).json({ success: false, message: check.errors[0] });
+        }
+
         const { uid, faceImage, faceData } = req.body;
         
         if (!uid || !faceImage) {
@@ -173,7 +199,7 @@ app.post("/save-face-data", async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error guardando datos faciales:', error);
+        logger.error("save face data failed", { error: error.message });
         res.status(500).json({
             success: false,
             message: "Error al guardar datos faciales"
@@ -194,5 +220,5 @@ app.get('/config', (req, res) => {
 
 const PORT = 3003;  // Forzar el puerto 3003
 app.listen(PORT, () => {
-  console.log(`🔐 Servidor de autenticación corriendo en puerto ${PORT}`);
+  logger.info("auth server listening", { port: PORT });
 });

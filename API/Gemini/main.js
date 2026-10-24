@@ -9,6 +9,8 @@ const {
     mergeStates,
     runGeneration
 } = require('./domain/assistant');
+const { validate } = require('../server/validate');
+const logger = require('../server/log');
 
 const app = express();
 app.use(express.json());
@@ -45,11 +47,14 @@ app.get('/api/chat', (req, res) => {
 
 app.post('/api/chat', async (req, res) => {
     try {
-        const { message, sessionId, userName } = req.body;
-
-        if (!message) {
-            return res.json({ error: 'No message provided' });
+        const check = validate(req.body, {
+            message: { required: true, type: 'string' }
+        });
+        if (!check.ok) {
+            return res.status(400).json({ success: false, error: check.errors[0] });
         }
+
+        const { message, sessionId, userName } = req.body;
 
         const { model, CONTEXT } = setupGemini(userName);
         const response = await generateResponse(model, message, CONTEXT);
@@ -75,22 +80,30 @@ app.get('/api/test', (req, res) => {
 });
 
 app.post('/api/clearContext', (req, res) => {
+    const check = validate(req.body ?? {}, {});
+    if (!check.ok) {
+        return res.status(400).json({ success: false, error: check.errors[0] });
+    }
     clearHistory(session);
     res.json({ status: 'success', message: 'Context cleared' });
 });
 
 app.post('/api/updateStates', (req, res) => {
     try {
+        const check = validate(req.body, {});
+        if (!check.ok) {
+            return res.status(400).json({ success: false, error: check.errors[0] });
+        }
         session.states = mergeStates(session.states, req.body);
-        console.log('States updated:', session.states);
+        logger.info('states updated');
         res.json({ success: true });
     } catch (error) {
-        console.error('Error updating states:', error);
+        logger.error('update states failed', { error: error.message });
         res.status(500).json({ error: error.message });
     }
 });
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+    logger.info('gemini server listening', { port: PORT });
 });
