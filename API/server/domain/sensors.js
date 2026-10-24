@@ -1,6 +1,11 @@
 // Reglas de sensores compartidas por el servidor MQTT
 
 function determineFloodStatus(data) {
+    if (data.flood === true) return "Detectada";
+    if (typeof data.flood === "string") {
+        const text = data.flood.toLowerCase();
+        if (text === "true" || text === "detectada") return "Detectada";
+    }
     return "No detectada";
 }
 
@@ -25,6 +30,10 @@ function determineFireStatus(data) {
 }
 
 function determineGeneralStatus(data) {
+    if (determineGasStatus(data) || determineFireStatus(data) || determineFloodStatus(data) === "Detectada") {
+        return "Crítico";
+    }
+
     const temp = Number(data.temperatura);
     if (temp > 40) return "Crítico";
     if (temp > 35) return "Precaución";
@@ -36,6 +45,9 @@ function determineAlerts(data) {
     const temp = Number(data.temperatura);
 
     if (temp > 35) alertCount++;
+    if (determineGasStatus(data)) alertCount++;
+    if (determineFireStatus(data)) alertCount++;
+    if (determineFloodStatus(data) === "Detectada") alertCount++;
 
     return `${alertCount} alertas`;
 }

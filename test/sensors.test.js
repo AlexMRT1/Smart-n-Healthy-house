@@ -88,7 +88,20 @@ test("environmental health uses the stricter band first", () => {
     }
 });
 
-test("flood stays undetected and payload keys are trimmed", () => {
+test("flood, gas and fire raise the alert count", () => {
+    assert.equal(determineFloodStatus({ flood: true }), "Detectada");
+    assert.equal(determineFloodStatus({ flood: "detectada" }), "Detectada");
+    assert.equal(determineFloodStatus({ flood: false }), "No detectada");
+    assert.equal(determineFloodStatus({ flood: "false" }), "No detectada");
+    assert.equal(determineFloodStatus({}), "No detectada");
+
+    assert.equal(determineAlerts({ temperatura: 22, gas: true, fire: false, flood: true }), "2 alertas");
+    assert.equal(determineAlerts({ temperatura: 36, gas: "true", fire: "TRUE", flood: "No" }), "3 alertas");
+    assert.equal(determineGeneralStatus({ temperatura: 22, fire: true }), "Crítico");
+    assert.equal(determineGeneralStatus({ temperatura: 36, gas: false, fire: false }), "Precaución");
+});
+
+test("flood follows the payload and sensor keys are trimmed", () => {
     const now = new Date("2026-10-23T18:00:00.000Z");
     const raw = JSON.stringify({
         " temperatura ": "22.5",
@@ -104,14 +117,14 @@ test("flood stays undetected and payload keys are trimmed", () => {
     assert.equal(parsed.sensorData.humedad, 40);
     assert.equal(parsed.sensorData.lastUpdate, now.toISOString());
     assert.equal(parsed.dashboardData.topic, "esp32/sensor");
-    assert.equal(parsed.dashboardData.message.flood, "No detectada");
+    assert.equal(parsed.dashboardData.message.flood, "Detectada");
     assert.equal(parsed.dashboardData.message.gas, true);
     assert.equal(parsed.dashboardData.message.fire, false);
     assert.equal(parsed.dashboardData.message.battery, "100%");
     assert.equal(parsed.dashboardData.message.camera, "Inactiva");
-    assert.equal(parsed.dashboardData.message.generalStatus, "Normal");
+    assert.equal(parsed.dashboardData.message.generalStatus, "Crítico");
+    assert.equal(parsed.dashboardData.message.alerts, "2 alertas");
     assert.equal(parsed.dashboardData.message.environmentalHealth, "98%");
-    assert.equal(determineFloodStatus({ flood: true }), "No detectada");
 });
 
 test("broken sensor payloads fail closed", () => {
