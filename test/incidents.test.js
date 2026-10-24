@@ -23,6 +23,16 @@ test("same local day ignores the clock", () => {
     assert.equal(isToday(null, now), false);
 });
 
+test("a missing incident list cleans to empty", () => {
+    assert.deepEqual(filterIncidentsForToday(null, now), []);
+    assert.deepEqual(filterIncidentsForToday(undefined, now), []);
+    assert.deepEqual(filterIncidentsForToday({ date: now }, now), []);
+
+    const kept = filterIncidentsForToday([null, { date: "nope" }, { date: now }], now);
+    assert.equal(kept.length, 1);
+    assert.equal(kept[0].date, now);
+});
+
 test("cleanup keeps today and the original order", () => {
     const incidents = [];
     for (let i = 0; i < 5000; i += 1) {

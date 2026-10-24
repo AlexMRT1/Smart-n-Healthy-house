@@ -10,6 +10,7 @@ function isToday(date, now = new Date()) {
 }
 
 function filterIncidentsForToday(incidents, now = new Date()) {
+    if (!Array.isArray(incidents)) return [];
     return incidents.filter((incident) => isToday(incident && incident.date, now));
 }
 
