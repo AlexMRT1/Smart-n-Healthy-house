@@ -13,6 +13,14 @@ npm start
 
 El servidor de la casa queda en el puerto 3000. No hace falta MQTT para arrancar ni para correr los tests.
 
+La pila completa, casa y servicios hermanos, arranca con Docker:
+
+```bash
+docker compose up --build
+```
+
+Puertos publicados: casa 3000, verificacion 3002, auth 3003, clima 3004, asistente 5000. Cada uno responde en `/health`.
+
 Certificados del dispositivo, si vas a usar MQTT, van en `secrets/mqtt.key`, `secrets/mqtt.cert` y `secrets/mqtt.ca`. Esa carpeta no se sube.
 
 ## Tests
@@ -217,7 +225,3 @@ En la carpeta Assets estan ubicados logos y animaciones SVG, todas las imagenes 
 
 Esta filosofía prioriza una experiencia moderna, eficiente y accesible, manteniendo un alto nivel de sofisticación visual y funcional.
 
-
-## Aviso
-
-**No listo para publicacion a web**

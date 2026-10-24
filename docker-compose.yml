@@ -1,6 +1,8 @@
 services:
   house:
     build: .
+    image: smart-house:local
+    command: ["node", "API/server/index.js"]
     ports:
       - "3000:3000"
     environment:
@@ -14,4 +16,88 @@ services:
       interval: 15s
       timeout: 5s
       retries: 5
-      start_period: 10s
+      start_period: 20s
+
+  verification:
+    image: smart-house:local
+    command: ["node", "API/server/auth0/sign-in/verification/server.js"]
+    ports:
+      - "3002:3002"
+    environment:
+      PORT: "3002"
+    depends_on:
+      house:
+        condition: service_started
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - fetch('http://127.0.0.1:3002/health').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  auth:
+    image: smart-house:local
+    command: ["node", "API/server/auth0/server/server.js"]
+    ports:
+      - "3003:3003"
+    environment:
+      PORT: "3003"
+    depends_on:
+      house:
+        condition: service_started
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - fetch('http://127.0.0.1:3003/health').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  weather:
+    image: smart-house:local
+    command: ["node", "API/Accuweather/Index.js"]
+    ports:
+      - "3004:3004"
+    environment:
+      PORT: "3004"
+    depends_on:
+      house:
+        condition: service_started
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - fetch('http://127.0.0.1:3004/health').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  assistant:
+    image: smart-house:local
+    command: ["node", "API/Gemini/main.js"]
+    ports:
+      - "5000:5000"
+    environment:
+      PORT: "5000"
+    depends_on:
+      house:
+        condition: service_started
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - fetch('http://127.0.0.1:5000/health').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
