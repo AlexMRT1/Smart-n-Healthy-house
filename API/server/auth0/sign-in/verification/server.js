@@ -2,9 +2,9 @@ const express = require('express');
 const path = require('path');
 const nodemailer = require('nodemailer');
 const cookieParser = require('cookie-parser');
-const cors = require('cors');
 const { generateVerificationCode, assessVerification } = require('./codes');
 const { validate } = require('../../../validate');
+const { applyApiDefaults } = require('../../../http');
 const logger = require('../../../log');
 
 require('dotenv').config({ path: path.join(__dirname, '.env') });
@@ -12,14 +12,16 @@ require('dotenv').config();
 
 const app = express();
 
-// Add CORS middleware
-app.use(cors({
-    origin: 'http://127.0.0.1:5500', // Allow requests from your frontend
-    credentials: true // Allow credentials (cookies)
-}));
-
-app.use(express.json());
+applyApiDefaults(app, {
+    origin: 'http://127.0.0.1:5500',
+    methods: ['GET', 'POST'],
+    credentials: true
+});
 app.use(cookieParser());
+
+app.get('/health', (req, res) => {
+    res.json({ ok: true });
+});
 
 // Update email transporter configuration for IONOS
 const transporter = nodemailer.createTransport({
@@ -140,7 +142,11 @@ app.post('/verify-code', (req, res) => {
     return res.status(result.status).json(result.body);
 });
 
-const PORT = 3002;
-app.listen(PORT, () => {
-    logger.info('verification server listening', { port: PORT });
-});
+const PORT = Number(process.env.PORT || 3002);
+if (require.main === module) {
+    app.listen(PORT, () => {
+        logger.info('verification server listening', { port: PORT });
+    });
+}
+
+module.exports = { app };
