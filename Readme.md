@@ -1,8 +1,38 @@
 
 # Smart'n healthy House
 
+## Arranque
 
+```bash
+npm ci
+npm test
+npm run lint
+npm run build
+npm start
+```
 
+El servidor de la casa queda en el puerto 3000. No hace falta MQTT para arrancar ni para correr los tests.
+
+Certificados del dispositivo, si vas a usar MQTT, van en `secrets/mqtt.key`, `secrets/mqtt.cert` y `secrets/mqtt.ca`. Esa carpeta no se sube.
+
+Variables que el codigo lee. Los valores se quedan en tu maquina:
+
+- `PORT`
+- `MQTT_HOST`, `MQTT_PORT`, `MQTT_PRIVATE_KEY_PATH`, `MQTT_CERT_PATH`, `MQTT_CA_PATH`
+- `ACCUWEATHER_API_KEY` (puerto 3004)
+- `GOOGLE_API_KEY` (puerto 5000)
+- `SMTP_USER`, `SMTP_PASS` (puerto 3002)
+- `FIREBASE_PRIVATE_KEY`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PROJECT_ID` (puerto 3003)
+
+## Arquitectura
+
+- `API/server/domain` reglas de sensores e incidentes
+- `API/server/server.js` HTTP y sockets. MQTT solo si hay certificados
+- `API/Gemini/domain` contexto del asistente
+- `API/Accuweather` clima
+- `WWW/Dashboard/scripts/logic.js` textos del tablero
+
+Una tarea toca un modulo. `npm test` tiene que pasar antes de cerrarla.
 
 ## AVISO DE CONFIDENCIALIDAD Y PROPIEDAD INTELECTUAL
 
@@ -34,19 +64,17 @@ El acceso o posesión de este documento no otorga, explícita ni implícitamente
 - Tutorial
 
 - API publica y Comercial
-## Instalacion de librerias necesarias
-
-Instalacion de librerías 
+## Instalacion
 
 ```bash
-  npm install cors
-  npm install express
-  npm install dotenv
-  npm install @google/generative-ai
+npm ci
+npm start
 ```
-para iniciar el servidor local de IA
+
+El chat local:
+
 ```bash
-    node API/Gemini/main.js
+node API/Gemini/main.js
 ```
 ## Tecnologias
 

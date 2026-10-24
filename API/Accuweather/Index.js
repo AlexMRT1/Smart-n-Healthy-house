@@ -5,12 +5,17 @@ require('dotenv').config();
 const app = express();
 const API_KEY = process.env.ACCUWEATHER_API_KEY;
 const BASE_URL = 'http://dataservice.accuweather.com';
+const { mapWeatherResponse } = require('./mapWeather');
 
 // Middleware
 app.use(express.json());
 
 // Get weather data by location
 app.get('/weather/:locationKey', async (req, res) => {
+    if (!API_KEY) {
+        return res.status(503).json({ error: 'Falta ACCUWEATHER_API_KEY' });
+    }
+
     try {
         const locationKey = req.params.locationKey;
         
@@ -63,17 +68,11 @@ app.get('/weather/:locationKey', async (req, res) => {
             console.log('No hay alertas activas');
         }
 
-        const weatherData = {
-            current: {
-                temperature: currentConditions.data[0].Temperature,
-                realFeel: currentConditions.data[0].RealFeelTemperature,
-                uvIndex: currentConditions.data[0].UVIndex,
-                uvIndexText: currentConditions.data[0].UVIndexText,
-                weatherText: currentConditions.data[0].WeatherText
-            },
-            airQuality: airQuality.data[0],
-            alerts: alerts.data
-        };
+        const weatherData = mapWeatherResponse(
+            currentConditions.data[0],
+            airQuality.data[0],
+            alerts.data
+        );
 
         res.json(weatherData);
     } catch (error) {
@@ -84,8 +83,16 @@ app.get('/weather/:locationKey', async (req, res) => {
 
 // Search location by query
 app.get('/location/search', async (req, res) => {
+    if (!API_KEY) {
+        return res.status(503).json({ error: 'Falta ACCUWEATHER_API_KEY' });
+    }
+
+    const { q } = req.query;
+    if (!q || !String(q).trim()) {
+        return res.status(400).json({ error: 'Falta el termino de busqueda' });
+    }
+
     try {
-        const { q } = req.query;
         console.log('\n=== Búsqueda de ubicación ===');
         console.log('Término de búsqueda:', q);
         
@@ -113,7 +120,11 @@ app.get('/location/search', async (req, res) => {
     }
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Servidor ejecutándose en puerto ${PORT}`);
-});
+const PORT = process.env.PORT || 3004;
+if (require.main === module) {
+    app.listen(PORT, () => {
+        console.log(`Servidor ejecutándose en puerto ${PORT}`);
+    });
+}
+
+module.exports = { app };
