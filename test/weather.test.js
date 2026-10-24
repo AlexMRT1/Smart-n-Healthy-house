@@ -1,6 +1,8 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
+const http = require("http");
 const { mapWeatherResponse } = require("../API/Accuweather/mapWeather");
+const { app } = require("../API/Accuweather/Index");
 
 test("weather mapping copies the fields the dashboard reads", () => {
     const current = {
@@ -46,5 +48,21 @@ test("alert lists of any size pass through unchanged", () => {
         if (size > 0) {
             assert.equal(mapped.alerts[size - 1].Text, `Alerta ${size - 1}`);
         }
+    }
+});
+
+test("weather health answers and a missing query does not call AccuWeather", async () => {
+    const server = http.createServer(app);
+    await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+    try {
+        const base = `http://127.0.0.1:${server.address().port}`;
+        const health = await fetch(`${base}/health`);
+        assert.equal(health.status, 200);
+        assert.equal((await health.json()).ok, true);
+
+        const search = await fetch(`${base}/location/search`);
+        assert.equal(search.status === 400 || search.status === 503, true);
+    } finally {
+        await new Promise((resolve) => server.close(resolve));
     }
 });

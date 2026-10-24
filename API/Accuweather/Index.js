@@ -1,5 +1,6 @@
 const express = require('express');
 const axios = require('axios');
+const logger = require('../server/log');
 require('dotenv').config();
 
 const app = express();
@@ -9,6 +10,10 @@ const { mapWeatherResponse } = require('./mapWeather');
 
 // Middleware
 app.use(express.json());
+
+app.get('/health', (req, res) => {
+    res.json({ ok: true });
+});
 
 // Get weather data by location
 app.get('/weather/:locationKey', async (req, res) => {
@@ -30,11 +35,7 @@ app.get('/weather/:locationKey', async (req, res) => {
                 }
             }
         );
-        console.log('\n=== Condiciones Actuales ===');
-        console.log('Temperatura:', currentConditions.data[0].Temperature);
-        console.log('Sensación térmica:', currentConditions.data[0].RealFeelTemperature);
-        console.log('Índice UV:', currentConditions.data[0].UVIndex);
-        console.log('Estado del tiempo:', currentConditions.data[0].WeatherText);
+        logger.info("current conditions", { locationKey });
 
         // Get air quality data
         const airQuality = await axios.get(
@@ -45,9 +46,7 @@ app.get('/weather/:locationKey', async (req, res) => {
                 }
             }
         );
-        console.log('\n=== Calidad del Aire ===');
-        console.log('Índice de calidad:', airQuality.data[0].Category);
-        console.log('Valor del índice:', airQuality.data[0].Index);
+        logger.info("air quality", { locationKey });
 
         // Get alerts
         const alerts = await axios.get(
@@ -59,14 +58,7 @@ app.get('/weather/:locationKey', async (req, res) => {
                 }
             }
         );
-        console.log('\n=== Alertas Meteorológicas ===');
-        if (alerts.data.length > 0) {
-            alerts.data.forEach((alert, index) => {
-                console.log(`Alerta ${index + 1}:`, alert.Text);
-            });
-        } else {
-            console.log('No hay alertas activas');
-        }
+        logger.info("weather alerts", { locationKey, count: alerts.data.length });
 
         const weatherData = mapWeatherResponse(
             currentConditions.data[0],
@@ -76,7 +68,7 @@ app.get('/weather/:locationKey', async (req, res) => {
 
         res.json(weatherData);
     } catch (error) {
-        console.error('Error:', error.message);
+        logger.error("weather fetch failed", { error: error.message });
         res.status(500).json({ error: 'Error al obtener datos meteorológicos' });
     }
 });
@@ -93,9 +85,8 @@ app.get('/location/search', async (req, res) => {
     }
 
     try {
-        console.log('\n=== Búsqueda de ubicación ===');
-        console.log('Término de búsqueda:', q);
-        
+        logger.info("location search", { q });
+
         const response = await axios.get(
             `${BASE_URL}/locations/v1/cities/search`,
             {
@@ -106,16 +97,10 @@ app.get('/location/search', async (req, res) => {
                 }
             }
         );
-        console.log('Resultados encontrados:', response.data.length);
-        response.data.forEach((location, index) => {
-            console.log(`\nResultado ${index + 1}:`);
-            console.log('Ciudad:', location.LocalizedName);
-            console.log('País:', location.Country.LocalizedName);
-        });
-        
+        logger.info("location results", { q, count: response.data.length });
         res.json(response.data);
     } catch (error) {
-        console.error('Error:', error.message);
+        logger.error("location search failed", { error: error.message });
         res.status(500).json({ error: 'Error al buscar ubicación' });
     }
 });
@@ -123,7 +108,7 @@ app.get('/location/search', async (req, res) => {
 const PORT = process.env.PORT || 3004;
 if (require.main === module) {
     app.listen(PORT, () => {
-        console.log(`Servidor ejecutándose en puerto ${PORT}`);
+        logger.info("weather server listening", { port: PORT });
     });
 }
 
