@@ -1,3 +1,18 @@
+const houseLog = typeof HouseLog === "undefined"
+    ? { info() {}, warn() {}, error() {} }
+    : HouseLog;
+const houseSocket = typeof HouseSocket === "undefined"
+    ? {
+        parseSocketUpdate(data) {
+            return data && data.message ? data.message : null;
+        },
+        reconnectPlan(attempts, maxAttempts) {
+            if (!(attempts < maxAttempts)) return { shouldReconnect: false, attempts };
+            return { shouldReconnect: true, attempts: attempts + 1 };
+        }
+    }
+    : HouseSocket;
+
 class DeviceDataManager {
     constructor() {
         this.socket = null;
@@ -34,7 +49,7 @@ class DeviceDataManager {
 
         // Verificar si los elementos críticos existen
         if (!this.elements.lastUpdateText) {
-            console.error('Elemento last-update-text no encontrado en el DOM');
+            houseLog.error('Elemento last-update-text no encontrado en el DOM');
         }
 
         // Inicializar lastUpdate con la fecha actual
@@ -63,7 +78,7 @@ class DeviceDataManager {
 
     updateLastUpdateText() {
         if (!this.elements.lastUpdateText) {
-            console.warn('Elemento last-update-text no encontrado');
+            houseLog.warn('Elemento last-update-text no encontrado');
             return;
         }
 
@@ -92,7 +107,7 @@ class DeviceDataManager {
 
     initializeSocket() {
         try {
-            console.log('Initializing Socket.IO connection...');
+            houseLog.info('Initializing Socket.IO connection');
             this.socket = io('http://localhost:3000', {
                 transports: ['websocket'],
                 reconnection: true,
@@ -107,13 +122,13 @@ class DeviceDataManager {
             
             this.updateConnectionStatus('connecting');
         } catch (error) {
-            console.error('Socket initialization error:', error);
+            houseLog.error('Socket initialization error', { error: error.message });
             this.handleConnectionError('Error inicializando conexión');
         }
     }
 
     handleSocketOpen() {
-        console.log('Socket.IO connected successfully');
+        houseLog.info('Socket.IO connected successfully');
         this.updateConnectionStatus('connected');
         
         if (this.elements.spinnerContainer) {
@@ -131,31 +146,34 @@ class DeviceDataManager {
 
     handleSocketMessage(data) {
         try {
-            console.log('Socket message received:', data);
-            if (data.message) {
-                // Actualizar timestamp
-                this.lastUpdate = new Date();
-                // Forzar actualización inmediata
-                this.updateLastUpdateText();
+            const message = houseSocket.parseSocketUpdate(data);
+            houseLog.info('Socket message received', { parsed: Boolean(message) });
+            if (!message) return;
 
-                if (!this.firstMessageReceived) {
-                    this.firstMessageReceived = true;
-                    this.handleFirstMessage();
-                }
-                this.updateUI(data.message);
+            this.lastUpdate = new Date();
+            this.updateLastUpdateText();
+
+            if (!this.firstMessageReceived) {
+                this.firstMessageReceived = true;
+                this.handleFirstMessage();
             }
+            this.updateUI(message);
         } catch (error) {
-            console.error('Error processing socket message:', error);
+            houseLog.error('Error processing socket message', { error: error.message });
         }
     }
 
     handleSocketClose() {
-        console.log('Socket.IO connection closed');
+        houseLog.info('Socket.IO connection closed');
         this.updateConnectionStatus('disconnected');
-        
-        if (HouseLogic.canReconnect(this.reconnectAttempts, this.maxReconnectAttempts)) {
-            this.reconnectAttempts++;
-            console.log(`Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})...`);
+
+        const plan = houseSocket.reconnectPlan(this.reconnectAttempts, this.maxReconnectAttempts);
+        this.reconnectAttempts = plan.attempts;
+        if (plan.shouldReconnect) {
+            houseLog.info('Attempting to reconnect', {
+                attempt: this.reconnectAttempts,
+                max: this.maxReconnectAttempts
+            });
             setTimeout(() => this.initializeSocket(), this.reconnectDelay);
         } else {
             this.handleConnectionError('Se excedió el número máximo de intentos de reconexión');
@@ -163,13 +181,13 @@ class DeviceDataManager {
     }
 
     handleSocketError(error) {
-        console.error('Socket.IO error:', error);
+        houseLog.error('Socket.IO error', { error: error && error.message });
         this.handleConnectionError('Error de conexión');
     }
 
     sendMessage(topic, message) {
         if (!this.socket || !this.socket.connected) {
-            console.error('Socket.IO not connected');
+            houseLog.error('Socket.IO not connected');
             return false;
         }
 
@@ -179,7 +197,7 @@ class DeviceDataManager {
             this.socket.emit('sensorUpdate', payload);
             return true;
         } catch (error) {
-            console.error('Error sending message:', error);
+            houseLog.error('Error sending message', { error: error.message });
             return false;
         }
     }
@@ -350,7 +368,7 @@ class DeviceDataManager {
     }
 
     handleConnectionError(message) {
-        console.error('Connection error:', message);
+        houseLog.error('Connection error', { message });
         if (this.elements.loader) {
             this.elements.loader.style.display = 'none';
         }
@@ -375,7 +393,7 @@ class DeviceDataManager {
 
         credentials.get((err) => {
             if (err) {
-                console.error('Error getting AWS credentials:', err);
+                houseLog.error('Error getting AWS credentials', { error: err && err.message });
                 this.updateConnectionStatus(false);
                 return;
             }
@@ -404,12 +422,12 @@ class DeviceDataManager {
             );
 
             this.client.on('connect', () => {
-                console.log('Conectado a AWS IoT Core');
+                houseLog.info('Conectado a AWS IoT Core');
                 this.updateConnectionStatus(true);
 
                 this.client.subscribe(this.topic + '#', (err) => {
                     if (!err) {
-                        console.log('Suscrito a', this.topic + '#');
+                        houseLog.info('Suscrito al topico', { topic: this.topic });
                         this.client.publish(this.topic + 'status', JSON.stringify({
                             deviceId: clientId,
                             status: 'connected',
@@ -432,13 +450,9 @@ class DeviceDataManager {
     }
 
     debug() {
-        console.log('Estado actual:', {
-            lastUpdate: this.lastUpdate,
-            updateInterval: !!this.updateInterval,
-            elements: {
-                lastUpdateText: !!this.elements.lastUpdateText,
-                updateIcon: !!this.elements.updateIcon
-            }
+        houseLog.info('Estado actual', {
+            lastUpdate: this.lastUpdate instanceof Date ? this.lastUpdate.toISOString() : null,
+            updateInterval: Boolean(this.updateInterval)
         });
     }
 }
