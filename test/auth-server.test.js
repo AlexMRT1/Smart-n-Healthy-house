@@ -1,7 +1,8 @@
-const test = require("node:test");
+const { test } = require("@jest/globals");
 const assert = require("node:assert/strict");
 const http = require("http");
-const { app } = require("../API/server/auth0/server/server");
+const { app, createAuthApp } = require("../API/server/auth0/server/server");
+const { createFakeFirestore } = require("./fixtures/fakeFirestore");
 
 function withoutFirebase(run) {
     const previous = {
@@ -53,4 +54,29 @@ test("auth answers health and refuses a body without firebase", async () => {
             await new Promise((resolve) => server.close(resolve));
         }
     });
+});
+
+test("register uses the injected firestore instead of a live account", async () => {
+    const database = createFakeFirestore();
+    const injected = createAuthApp({ database: () => database });
+    const server = http.createServer(injected);
+    await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+    try {
+        const response = await fetch(`http://127.0.0.1:${server.address().port}/register`, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({
+                email: "ada@example.com",
+                password: "Secret1!",
+                nombre: "Ada",
+                uid: "uid-injected"
+            })
+        });
+        assert.equal(response.status, 201);
+        const stored = database.read("Users", "uid-injected");
+        assert.equal(stored.Email, "ada@example.com");
+        assert.notEqual(stored.Password, "Secret1!");
+    } finally {
+        await new Promise((resolve) => server.close(resolve));
+    }
 });

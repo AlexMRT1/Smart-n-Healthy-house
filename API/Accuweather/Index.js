@@ -1,110 +1,91 @@
-const express = require('express');
-const axios = require('axios');
-const logger = require('../server/log');
-require('dotenv').config();
+const express = require("express");
+const axios = require("axios");
+const { query, validationResult } = require("express-validator");
+const logger = require("../server/log");
+const { mapWeatherResponse } = require("./mapWeather");
 
-const app = express();
-const API_KEY = process.env.ACCUWEATHER_API_KEY;
-const BASE_URL = 'http://dataservice.accuweather.com';
-const { mapWeatherResponse } = require('./mapWeather');
+require("dotenv").config();
 
-// Middleware
-app.use(express.json());
+const BASE_URL = "http://dataservice.accuweather.com";
 
-app.get('/health', (req, res) => {
-    res.json({ ok: true });
-});
+function createWeatherApp(options = {}) {
+    const client = options.client || axios;
+    const apiKey = () => (options.apiKey !== undefined ? options.apiKey : process.env.ACCUWEATHER_API_KEY);
+    const app = express();
 
-// Get weather data by location
-app.get('/weather/:locationKey', async (req, res) => {
-    if (!API_KEY) {
-        return res.status(503).json({ error: 'Falta ACCUWEATHER_API_KEY' });
-    }
+    app.use(express.json());
 
-    try {
-        const locationKey = req.params.locationKey;
-        
-        // Get current conditions
-        const currentConditions = await axios.get(
-            `${BASE_URL}/currentconditions/v1/${locationKey}`,
-            {
-                params: {
-                    apikey: API_KEY,
-                    details: true,
-                    language: 'es-es'
-                }
-            }
-        );
-        logger.info("current conditions", { locationKey });
+    app.get("/health", (req, res) => {
+        res.json({ ok: true });
+    });
 
-        // Get air quality data
-        const airQuality = await axios.get(
-            `${BASE_URL}/airquality/v1/current/${locationKey}`,
-            {
-                params: {
-                    apikey: API_KEY
-                }
-            }
-        );
-        logger.info("air quality", { locationKey });
+    app.get("/weather/:locationKey", async (req, res) => {
+        const key = apiKey();
+        if (!key) {
+            return res.status(503).json({ error: "Falta ACCUWEATHER_API_KEY" });
+        }
 
-        // Get alerts
-        const alerts = await axios.get(
-            `${BASE_URL}/alerts/v1/${locationKey}`,
-            {
-                params: {
-                    apikey: API_KEY,
-                    language: 'es-es'
-                }
-            }
-        );
-        logger.info("weather alerts", { locationKey, count: alerts.data.length });
+        try {
+            const locationKey = req.params.locationKey;
+            const currentConditions = await client.get(
+                `${BASE_URL}/currentconditions/v1/${locationKey}`,
+                { params: { apikey: key, details: true, language: "es-es" } }
+            );
+            logger.info("current conditions", { locationKey });
 
-        const weatherData = mapWeatherResponse(
-            currentConditions.data[0],
-            airQuality.data[0],
-            alerts.data
-        );
+            const airQuality = await client.get(
+                `${BASE_URL}/airquality/v1/current/${locationKey}`,
+                { params: { apikey: key } }
+            );
+            logger.info("air quality", { locationKey });
 
-        res.json(weatherData);
-    } catch (error) {
-        logger.error("weather fetch failed", { error: error.message });
-        res.status(500).json({ error: 'Error al obtener datos meteorológicos' });
-    }
-});
+            const alerts = await client.get(
+                `${BASE_URL}/alerts/v1/${locationKey}`,
+                { params: { apikey: key, language: "es-es" } }
+            );
+            logger.info("weather alerts", { locationKey, count: alerts.data.length });
 
-// Search location by query
-app.get('/location/search', async (req, res) => {
-    if (!API_KEY) {
-        return res.status(503).json({ error: 'Falta ACCUWEATHER_API_KEY' });
-    }
+            res.json(mapWeatherResponse(
+                currentConditions.data[0],
+                airQuality.data[0],
+                alerts.data
+            ));
+        } catch (error) {
+            logger.error("weather fetch failed", { error: error.message });
+            res.status(500).json({ error: "Error al obtener datos meteorológicos" });
+        }
+    });
 
-    const { q } = req.query;
-    if (!q || !String(q).trim()) {
-        return res.status(400).json({ error: 'Falta el termino de busqueda' });
-    }
+    app.get("/location/search", query("q").optional().isString(), async (req, res) => {
+        const key = apiKey();
+        if (!key) {
+            return res.status(503).json({ error: "Falta ACCUWEATHER_API_KEY" });
+        }
 
-    try {
-        logger.info("location search", { q });
+        const checked = validationResult(req);
+        const q = req.query.q;
+        if (!checked.isEmpty() || !q || !String(q).trim()) {
+            return res.status(400).json({ error: "Falta el termino de busqueda" });
+        }
 
-        const response = await axios.get(
-            `${BASE_URL}/locations/v1/cities/search`,
-            {
-                params: {
-                    apikey: API_KEY,
-                    q,
-                    language: 'es-es'
-                }
-            }
-        );
-        logger.info("location results", { q, count: response.data.length });
-        res.json(response.data);
-    } catch (error) {
-        logger.error("location search failed", { error: error.message });
-        res.status(500).json({ error: 'Error al buscar ubicación' });
-    }
-});
+        try {
+            logger.info("location search", { q });
+            const response = await client.get(
+                `${BASE_URL}/locations/v1/cities/search`,
+                { params: { apikey: key, q, language: "es-es" } }
+            );
+            logger.info("location results", { q, count: response.data.length });
+            res.json(response.data);
+        } catch (error) {
+            logger.error("location search failed", { error: error.message });
+            res.status(500).json({ error: "Error al buscar ubicación" });
+        }
+    });
 
+    return app;
+}
+
+const app = createWeatherApp();
 const PORT = process.env.PORT || 3004;
 if (require.main === module) {
     app.listen(PORT, () => {
@@ -112,4 +93,4 @@ if (require.main === module) {
     });
 }
 
-module.exports = { app };
+module.exports = { app, createWeatherApp };
