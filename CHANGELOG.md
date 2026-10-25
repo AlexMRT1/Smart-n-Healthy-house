@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.3.0
+
+- La suite corre con Jest. `npm test` no necesita `.env` ni cuentas externas.
+- Auth acepta un Firestore en memoria para registro, login social y datos faciales.
+- El clima recibe un cliente HTTP inyectado y la cobertura incluye auth, asistente y clima.
+- El tablero parsea los mensajes de socket en un modulo propio y deja de usar `console.log`.
+- TypeScript queda en 5.9.3 y ESLint en 9.39.5.
+
 ## 1.2.0
 
 - Gas, fuego e inundacion cuentan como alerta y suben el estado a critico.
