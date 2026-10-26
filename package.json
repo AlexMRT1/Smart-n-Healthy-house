@@ -67,7 +67,8 @@
       "API/server/http.js",
       "API/server/auth0/server/**/*.js",
       "API/Gemini/domain/**/*.js",
-      "API/Accuweather/**/*.js"
+      "API/Accuweather/**/*.js",
+      "WWW/Dashboard/scripts/socketClient.js"
     ],
     "reporter": [
       "text"
