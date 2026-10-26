@@ -1,5 +1,6 @@
 const { test } = require("@jest/globals");
 const assert = require("node:assert/strict");
+const fs = require("node:fs");
 const { info, warn, error } = require("../WWW/Dashboard/scripts/logger");
 
 function capture(method, run) {
@@ -32,4 +33,12 @@ test("warnings and errors keep the message field", () => {
     assert.equal(failure.level, "error");
     assert.equal(failure.message, "closed");
     assert.equal(failure.socket, "house");
+});
+
+test("the status page logs through the dashboard wrapper", () => {
+    const source = fs.readFileSync("API/server/status/status.js", "utf8");
+    assert.equal(source.includes("console.log"), false);
+    assert.equal(source.includes("console.error"), false);
+    assert.equal(source.includes("statusLog.info"), true);
+    assert.equal(source.includes("statusLog.error"), true);
 });
