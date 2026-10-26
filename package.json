@@ -69,7 +69,8 @@
       "API/Gemini/domain/**/*.js",
       "API/Accuweather/**/*.js",
       "WWW/Dashboard/scripts/socketClient.js",
-      "WWW/Dashboard/scripts/viewState.js"
+      "WWW/Dashboard/scripts/viewState.js",
+      "web/not-ready/pageState.js"
     ],
     "reporter": [
       "text"
