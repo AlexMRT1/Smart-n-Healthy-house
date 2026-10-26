@@ -1,5 +1,6 @@
 const { test } = require("@jest/globals");
 const assert = require("node:assert/strict");
+const { createHouseApp } = require("../API/server/server");
 const {
     validatePassword,
     hasRequiredRegisterFields,
@@ -64,4 +65,31 @@ test("location fills missing pieces with empty strings", () => {
         state: "Jalisco",
         city: "Guadalajara"
     });
+});
+
+test("clear-incidents rejects a body that is not an object", async () => {
+    const house = createHouseApp();
+    await new Promise((resolve) => house.server.listen(0, "127.0.0.1", resolve));
+    try {
+        const base = `http://127.0.0.1:${house.server.address().port}`;
+        const rejected = await fetch(`${base}/clear-incidents`, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: "[]"
+        });
+        assert.equal(rejected.status, 400);
+        const body = await rejected.json();
+        assert.equal(body.success, false);
+
+        const accepted = await fetch(`${base}/clear-incidents`, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: "{}"
+        });
+        assert.equal(accepted.status, 200);
+        assert.equal((await accepted.json()).success, true);
+    } finally {
+        house.io.close();
+        await new Promise((resolve) => house.server.close(resolve));
+    }
 });

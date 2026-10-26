@@ -14,7 +14,7 @@ const {
 } = require("./domain/incidents");
 const { loadMqttCredentials } = require("./credentials");
 const { applyApiDefaults } = require("./http");
-const { incidentRules, rejectValidation } = require("./validate");
+const { incidentRules, clearRules, rejectValidation } = require("./validate");
 const logger = require("./log");
 const metrics = require("./metrics");
 
@@ -105,7 +105,8 @@ function createHouseApp() {
         }
     });
 
-    app.post("/clear-incidents", (req, res) => {
+    app.post("/clear-incidents", clearRules, (req, res) => {
+        if (rejectValidation(req, res)) return;
         state.systemStatus.incidents = [];
         state.systemStatus.lastCleanup = new Date();
         io.emit("incidentsCleared");

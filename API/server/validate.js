@@ -1,5 +1,14 @@
 const { body, validationResult } = require("express-validator");
 
+const clearRules = [
+    body().custom((value) => {
+        if (value == null || typeof value !== "object" || Array.isArray(value)) {
+            throw new Error("body must be an object");
+        }
+        return true;
+    })
+];
+
 const incidentRules = [
     body("title")
         .isString()
@@ -38,4 +47,4 @@ function validate(body, schema) {
     return { ok: errors.length === 0, errors };
 }
 
-module.exports = { incidentRules, rejectValidation, validate };
+module.exports = { incidentRules, clearRules, rejectValidation, validate };
