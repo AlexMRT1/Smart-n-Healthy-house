@@ -1,6 +1,7 @@
 const { test } = require("@jest/globals");
 const assert = require("node:assert/strict");
 const { createHouseApp } = require("../API/server/server");
+const { createAuthApp } = require("../API/server/auth0/server/server");
 const {
     validatePassword,
     hasRequiredRegisterFields,
@@ -65,6 +66,23 @@ test("location fills missing pieces with empty strings", () => {
         state: "Jalisco",
         city: "Guadalajara"
     });
+});
+
+test("auth reads reject a detail query that is not boolean", async () => {
+    const app = createAuthApp({ database() { throw new Error("unused"); } });
+    const server = app.listen(0, "127.0.0.1");
+    await new Promise((resolve) => server.once("listening", resolve));
+    try {
+        const base = `http://127.0.0.1:${server.address().port}`;
+        for (const path of ["/health", "/config"]) {
+            const rejected = await fetch(`${base}${path}?detail=nope`);
+            assert.equal(rejected.status, 400, path);
+            const accepted = await fetch(`${base}${path}`);
+            assert.equal(accepted.status, 200, path);
+        }
+    } finally {
+        await new Promise((resolve) => server.close(resolve));
+    }
 });
 
 test("house reads reject a detail query that is not boolean", async () => {
