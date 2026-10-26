@@ -461,19 +461,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             state.lastScrollTime = now;
 
-            if (e.key === 'ArrowDown') {
-                if (!state.isGridVisible && !state.isThirdPanelVisible) {
-                    toggleView('down');
-                } else if (state.isGridVisible && !state.isThirdPanelVisible) {
-                    toggleView('down');
-                }
-            } else if (e.key === 'ArrowUp') {
-                if (state.isThirdPanelVisible) {
-                    toggleView('up');
-                } else if (state.isGridVisible) {
-                    toggleView('up');
-                }
-            }
+            const direction = HouseView.arrowDirection(e.key, state);
+            if (direction) toggleView(direction);
         }
     });
 
