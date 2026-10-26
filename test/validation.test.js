@@ -67,6 +67,26 @@ test("location fills missing pieces with empty strings", () => {
     });
 });
 
+test("house reads reject a detail query that is not boolean", async () => {
+    const house = createHouseApp();
+    await new Promise((resolve) => house.server.listen(0, "127.0.0.1", resolve));
+    try {
+        const base = `http://127.0.0.1:${house.server.address().port}`;
+        for (const path of ["/health", "/metrics", "/status"]) {
+            const rejected = await fetch(`${base}${path}?detail=nope`);
+            assert.equal(rejected.status, 400, path);
+            const accepted = await fetch(`${base}${path}`);
+            assert.equal(accepted.status, 200, path);
+        }
+        const detailed = await fetch(`${base}/health?detail=true`);
+        assert.equal(detailed.status, 200);
+        assert.equal((await detailed.json()).ok, true);
+    } finally {
+        house.io.close();
+        await new Promise((resolve) => house.server.close(resolve));
+    }
+});
+
 test("clear-incidents rejects a body that is not an object", async () => {
     const house = createHouseApp();
     await new Promise((resolve) => house.server.listen(0, "127.0.0.1", resolve));

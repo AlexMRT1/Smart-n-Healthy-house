@@ -1,4 +1,8 @@
-const { body, validationResult } = require("express-validator");
+const { body, query, validationResult } = require("express-validator");
+
+const readRules = [
+    query("detail").optional().isBoolean().withMessage("detail must be a boolean")
+];
 
 const clearRules = [
     body().custom((value) => {
@@ -47,4 +51,4 @@ function validate(body, schema) {
     return { ok: errors.length === 0, errors };
 }
 
-module.exports = { incidentRules, clearRules, rejectValidation, validate };
+module.exports = { incidentRules, clearRules, readRules, rejectValidation, validate };
