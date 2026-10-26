@@ -70,7 +70,8 @@
       "API/Accuweather/**/*.js",
       "WWW/Dashboard/scripts/socketClient.js",
       "WWW/Dashboard/scripts/viewState.js",
-      "web/not-ready/pageState.js"
+      "web/not-ready/pageState.js",
+      "WWW/Dashboard/scripts/logger.js"
     ],
     "reporter": [
       "text"
