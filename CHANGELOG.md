@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Gobernanza de repositorio: plantillas para issues (bug report y feature request), plantilla para Pull Requests y Código de Conducta.
+- Flujo de contribución actualizado con vinculación de trazabilidad de issues y PRs.
+
 ## 1.1.0
 
 - Logs en JSON, contador en `/metrics` y validacion de los POST.
